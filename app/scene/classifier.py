@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 import os
+import numpy as np
 from typing import Any, Dict, List, Tuple, Optional
 from app.config_loader import load_config
 
 
 class ZeroShotClassifier:
-    """Optional zero-shot intent classifier using HuggingFace transformers."""
+    """Semantic zero-shot intent classifier using sentence transformers."""
     
     def __init__(self):
-        self.model = None
-        self.tokenizer = None
         self._config = None
         self._enabled = False
+        self._model = None
+        self._label_names = None
+        self._label_texts = None
+        self._label_embeddings = None
         
     def _get_config(self) -> Dict[str, Any]:
         """Load classifier config."""
@@ -22,9 +25,9 @@ class ZeroShotClassifier:
             self._config = intent_config.get("classifier", {})
         return self._config
     
-    def _load_model(self):
-        """Lazy load the classifier model."""
-        if self.model is not None:
+    def _ensure_model(self):
+        """Lazy load the semantic classifier model."""
+        if self._model is not None:
             return
             
         config = self._get_config()
@@ -32,56 +35,67 @@ class ZeroShotClassifier:
             return
             
         try:
-            from transformers import pipeline
-            model_name = config.get("model", "facebook/bart-large-mnli")
-            self.classifier = pipeline("zero-shot-classification", model=model_name)
+            from sentence_transformers import SentenceTransformer
+            model_name = config.get("model", "all-MiniLM-L6-v2")
+            self._model = SentenceTransformer(model_name)
+            
+            # Load label prompts and create embeddings
+            label_prompts = config.get("label_prompts", {})
+            self._label_names = list(label_prompts.keys())
+            self._label_texts = [label_prompts[k] for k in self._label_names]
+            
+            # Create normalized embeddings for cosine similarity
+            self._label_embeddings = self._model.encode(
+                self._label_texts, 
+                normalize_embeddings=True
+            )
+            
             self._enabled = True
+            print(f"Loaded semantic classifier with {len(self._label_names)} labels")
+            
         except ImportError:
-            print("Warning: transformers not installed. Zero-shot classifier disabled.")
+            print("Warning: sentence-transformers not installed. Semantic classifier disabled.")
             self._enabled = False
         except Exception as e:
-            print(f"Warning: Failed to load classifier: {e}")
+            print(f"Warning: Failed to load semantic classifier: {e}")
             self._enabled = False
     
     def classify(self, text: str) -> Tuple[str, float]:
         """
-        Classify text intent using rule-based ML approach.
+        Classify text intent using semantic similarity.
         Returns (label, confidence) or ("none", 0.0) if disabled/failed.
         """
         config = self._get_config()
         if not config.get("enabled", False):
             return "none", 0.0
             
-        # Rule-based classification (more reliable than downloading large models)
-        text_lower = text.lower().strip()
+        self._ensure_model()
         
-        # Control actions - check OFF first to avoid conflicts
-        if any(word in text_lower for word in ["turn off", "disable", "switch off", "stop", "hide", "deactivate"]):
-            if any(word in text_lower for word in ["handles", "nerve", "sinus", "xray", "implants"]):
-                return "control_off", 0.9
+        if not self._enabled or self._model is None:
+            return "none", 0.0
+            
+        try:
+            # Encode input text with normalization
+            query_embedding = self._model.encode([text], normalize_embeddings=True)[0]
+            
+            # Compute cosine similarities (since embeddings are normalized)
+            similarities = np.dot(self._label_embeddings, query_embedding)
+            
+            # Get best match
+            best_idx = int(np.argmax(similarities))
+            best_label = self._label_names[best_idx]
+            best_confidence = float(similarities[best_idx])
+            
+            # Apply minimum confidence threshold
+            min_confidence = 0.3
+            if best_confidence < min_confidence:
+                return "none", best_confidence
                 
-        if any(word in text_lower for word in ["turn on", "enable", "switch on", "start", "show", "give me", "provide me with", "activate"]):
-            if any(word in text_lower for word in ["handles", "nerve", "sinus", "xray", "implants"]):
-                # Check if it's an implant with specific size
-                if "implant" in text_lower and any(char.isdigit() for char in text_lower):
-                    return "control_value", 0.9
-                return "control_on", 0.9
-                
-        if any(word in text_lower for word in ["set", "increase", "decrease"]) and any(word in text_lower for word in ["brightness", "contrast"]):
-            return "control_value", 0.8
+            return best_label, best_confidence
             
-        # Information requests
-        if text_lower.startswith("what are") or text_lower.startswith("what is"):
-            return "info_definition", 0.9
-            
-        if text_lower.startswith("where is") or text_lower.startswith("where are"):
-            return "info_location", 0.9
-            
-        # Size requests - implant requests (only if no specific size mentioned)
-        if "implant" in text_lower and ("give me" in text_lower or "provide me" in text_lower) and not any(char.isdigit() for char in text_lower):
-            return "size_request", 0.8
-            
-        return "none", 0.0
+        except Exception as e:
+            print(f"Warning: Classification failed: {e}")
+            return "none", 0.0
     
     def is_enabled(self) -> bool:
         """Check if classifier is enabled and loaded."""

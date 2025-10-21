@@ -38,6 +38,12 @@ class DecisionRouter:
         # 1. Intent classification (ML-only approach)
         intent_label, intent_confidence = classifier.classify(text)
         
+        # LLM tie-breaker for low confidence cases
+        if intent_confidence < intent_threshold:
+            llm_label, llm_confidence = self._llm_classify(text)
+            if llm_confidence > intent_confidence:
+                intent_label, intent_confidence = llm_label, llm_confidence
+        
         # Special handling for implant requests
         if "implant" in text.lower() and ("give me" in text.lower() or "provide me" in text.lower()):
             if any(char.isdigit() for char in text):
@@ -110,6 +116,37 @@ class DecisionRouter:
             fallback_response = self._generate_fallback_response(text)
             confidence_logger.log_clarification(text, fallback_response["clarifications"], {})
             return fallback_response
+    
+    def _llm_classify(self, text: str) -> Tuple[str, float]:
+        """LLM-based intent classification as tie-breaker."""
+        try:
+            from app.llm.ollama_client import OllamaClient
+            client = OllamaClient()
+            
+            # Get allowed labels from config
+            config = self._get_config()
+            labels = config.get("classifier", {}).get("labels", [])
+            label_prompts = config.get("classifier", {}).get("label_prompts", {})
+            
+            # Create constrained prompt
+            prompt = f"""Classify this user input into one of these exact labels: {', '.join(labels)}
+
+User input: "{text}"
+
+Respond with only the label name (e.g., "control_on", "info_definition", etc.). No explanation."""
+
+            response = client.chat(prompt)
+            response = response.strip().lower()
+            
+            # Check if response is a valid label
+            if response in labels:
+                return response, 0.7  # Medium confidence for LLM
+            else:
+                return "none", 0.0
+                
+        except Exception as e:
+            print(f"Warning: LLM classification failed: {e}")
+            return "none", 0.0
     
     def _generate_clarification(self, text: str, intent_label: str, intent_conf: float, 
                                entity: Optional[Tuple], entity_conf: float,

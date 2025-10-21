@@ -15,7 +15,16 @@
   },
   "classifier": {
     "enabled": true,
-    "model": "facebook/bart-large-mnli",
-    "labels": ["control_on", "control_off", "control_value", "info_definition", "info_location", "size_request", "none"]
+    "model": "all-MiniLM-L6-v2",
+    "labels": ["control_on", "control_off", "control_value", "info_definition", "info_location", "size_request", "none"],
+    "label_prompts": {
+      "control_on": "User requests to activate or turn on a scene element",
+      "control_off": "User requests to deactivate or turn off a scene element", 
+      "control_value": "User requests to set a numeric control like brightness contrast or implant size",
+      "info_definition": "User asks what something is or its definition",
+      "info_location": "User asks where something is or which side",
+      "size_request": "User asks for implants without giving size and needs clarification",
+      "none": "No clear intent"
+    }
   }
 }

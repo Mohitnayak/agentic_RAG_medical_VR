@@ -98,8 +98,41 @@ class SemanticEntityResolver:
     
     def lexical_overlap(self, text: str) -> List[Tuple[str, float, Dict[str, Any]]]:
         """
-        Fallback lexical entity resolution using simple text matching.
+        Fallback lexical entity resolution using fuzzy matching.
         """
+        try:
+            from rapidfuzz.fuzz import partial_ratio
+        except ImportError:
+            # Fallback to simple string matching if rapidfuzz not available
+            return self._simple_lexical_overlap(text)
+            
+        config = self._get_config()
+        entities = config.get("entities", [])
+        
+        text_lower = text.lower()
+        results = []
+        
+        for entity in entities:
+            name = entity.get("name", "").lower()
+            synonyms = [s.lower() for s in entity.get("synonyms", [])]
+            
+            # Check name and synonyms with fuzzy matching
+            candidates = [name] + synonyms
+            best_score = 0
+            
+            for candidate in candidates:
+                if candidate:
+                    score = partial_ratio(text_lower, candidate)
+                    best_score = max(best_score, score)
+            
+            # Use threshold of 70 for fuzzy matching
+            if best_score >= 70:
+                results.append((entity["name"], best_score / 100.0, entity))
+        
+        return results
+    
+    def _simple_lexical_overlap(self, text: str) -> List[Tuple[str, float, Dict[str, Any]]]:
+        """Simple lexical matching fallback."""
         config = self._get_config()
         entities = config.get("entities", [])
         
