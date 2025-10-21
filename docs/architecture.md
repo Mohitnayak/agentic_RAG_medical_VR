@@ -8,31 +8,31 @@ This document provides a high-level block diagram and component overview of the 
 flowchart TB
     UI[Web UI / HTTP Client] --> API[Flask API /api/v1/chat]
 
-    subgraph Config[Configuration Layer: config]
-        INTENT_CFG[intent.json<br/>verbs, thresholds, classifier]
-        ENTITIES_CFG[entities.json<br/>scene elements, synonyms, locations]
-        RANGES_CFG[ranges.json<br/>numeric ranges, implant limits]
-        RETRIEVAL_CFG[retrieval.json<br/>hybrid weights, top-k]
+    subgraph Config[Configuration Layer]
+        INTENT_CFG[intent.json - verbs thresholds classifier]
+        ENTITIES_CFG[entities.json - scene elements synonyms locations]
+        RANGES_CFG[ranges.json - numeric ranges implant limits]
+        RETRIEVAL_CFG[retrieval.json - hybrid weights top k]
     end
 
     API --> ROUTER[DecisionRouter]
     Config --> ROUTER
 
-    ROUTER --> IC[Intent Classifier<br/>(rule-based ML)]
-    ROUTER --> ER[Entity Resolver<br/>(semantic + lexical)]
-    ROUTER --> NP[Numeric Parser<br/>(Recognizers-Text)]
+    ROUTER --> IC[Intent Classifier - rule based ML]
+    ROUTER --> ER[Entity Resolver - semantic and lexical]
+    ROUTER --> NP[Numeric Parser - Recognizers Text]
 
     IC --> CONF[Confidence Aggregation]
     ER --> CONF
     NP --> CONF
 
-    CONF --> DECIDE{confidence >= router_cutoff?}
+    CONF --> DECIDE{confidence >= router cutoff}
     DECIDE -->|yes| ACTIONS[Route to Action]
     DECIDE -->|no| CLARIFY[Targeted Clarification]
 
-    ACTIONS --> CTRL[Tool Action (control JSON)]
-    ACTIONS --> INFO[Info Answer (definition/location)]
-    ACTIONS --> SIZE[Size Request Flow (implants)]
+    ACTIONS --> CTRL[Tool Action control JSON]
+    ACTIONS --> INFO[Info Answer definition location]
+    ACTIONS --> SIZE[Size Request Flow implants]
 
     CTRL --> VALID[Pydantic Validation]
     INFO --> VALID
@@ -42,11 +42,11 @@ flowchart TB
 
     %% Validation failure -> fallback RAG
     API -->|validation error| RAG[RAG Fallback]
-    RAG --> RET[Retriever<br/>(hybrid fusion)]
+    RAG --> RET[Retriever hybrid fusion]
     RET --> LEX[Lexical scorer]
-    RET --> EMB[Embeddings (Ollama)]
+    RET --> EMB[Embeddings Ollama]
     RET --> VS[FAISS Vector Store]
-    VS --> DB[(SQLite: documents, chunks)]
+    VS --> DB[SQLite documents and chunks]
     RET --> AGENT[Agent Planner]
     AGENT --> LLM[Ollama Llama 3.1]
 ```
