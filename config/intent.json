@@ -8,23 +8,23 @@
     "value": ["set", "increase", "decrease"]
   },
   "thresholds": {
-    "intent_confidence": 0.6,
-    "entity_confidence": 0.5,
-    "value_confidence": 0.4,
-    "router_cutoff": 0.3
+    "intent_confidence": 0.4,
+    "entity_confidence": 0.3,
+    "value_confidence": 0.2,
+    "router_cutoff": 0.1
   },
   "classifier": {
     "enabled": true,
     "model": "all-MiniLM-L6-v2",
     "labels": ["control_on", "control_off", "control_value", "info_definition", "info_location", "size_request", "none"],
     "label_prompts": {
-      "control_on": "User requests to activate or turn on a scene element",
-      "control_off": "User requests to deactivate or turn off a scene element", 
-      "control_value": "User requests to set a numeric control like brightness contrast or implant size",
-      "info_definition": "User asks what something is or its definition",
-      "info_location": "User asks where something is or which side",
-      "size_request": "User asks for implants without giving size and needs clarification",
-      "none": "No clear intent"
+      "control_on": "User wants to turn on, activate, enable, show, or start something like handles, xray flashlight, nerve, sinus, or align implants",
+      "control_off": "User wants to turn off, deactivate, disable, hide, or stop something like handles, xray flashlight, nerve, sinus, or align implants", 
+      "control_value": "User wants to set brightness, contrast, or implant size with specific numeric values",
+      "info_definition": "User asks what something is, definition of something, or wants information about scene elements",
+      "info_location": "User asks where something is located or which side something is on",
+      "size_request": "User asks for implants but doesn't specify size dimensions",
+      "none": "No clear intent or ambiguous request"
     }
   }
 }

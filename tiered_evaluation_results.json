@@ -1,0 +1,1478 @@
+{
+  "overall": {
+    "score": 385.939492225647,
+    "max_score": 609,
+    "percentage": 63.372658821945315
+  },
+  "tier1_critical": {
+    "score": 76,
+    "max_score": 92,
+    "percentage": 82.6086956521739,
+    "results": [
+      {
+        "metric_name": "Intent Classification Accuracy",
+        "tier": "Tier 1 - Critical",
+        "score": 30,
+        "max_score": 38,
+        "percentage": 78.94736842105263,
+        "status": "FAIL",
+        "details": {
+          "correct": [
+            {
+              "input": "turn on handles",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "activate the handles",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "enable handles",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "show me the handles",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "turn on xray flashlight",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "activate nerve overlay",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "show sinuses",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "turn off handles",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "deactivate handles",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "disable xray flashlight",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "hide nerve",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "give me implant size 4 x 11.5",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "provide me with implant 3.5 x 8",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "what are sinuses",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "what is the nerve",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "what are handles",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "what is xray flashlight",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "what are X ray flash light",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "where is the skull",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "where are the implants",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "which side is the menu",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "where is the xray display",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "give me the implant",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "provide me with implants",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "what are the sinuses",
+              "expected": "info",
+              "actual": "info"
+            },
+            {
+              "input": "show me the dental implants",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "turn on",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "set brightness",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "can you please turn on the handles for me",
+              "expected": "control",
+              "actual": "control"
+            },
+            {
+              "input": "I would like to activate the xray flashlight",
+              "expected": "control",
+              "actual": "control"
+            }
+          ],
+          "incorrect": [
+            {
+              "input": "tirn on the handle",
+              "expected": "control",
+              "actual": "clarification"
+            },
+            {
+              "input": "set contrast to 75",
+              "expected": "control",
+              "actual": "clarification"
+            },
+            {
+              "input": "set brightness to 50%",
+              "expected": "control",
+              "actual": "clarification"
+            },
+            {
+              "input": "tell me about implants",
+              "expected": "info",
+              "actual": "clarification"
+            },
+            {
+              "input": "turnn on handles",
+              "expected": "control",
+              "actual": "clarification"
+            },
+            {
+              "input": "activat the handles",
+              "expected": "control",
+              "actual": "clarification"
+            },
+            {
+              "input": "what is",
+              "expected": "clarification",
+              "actual": "ERROR: 'answer'"
+            },
+            {
+              "input": "could you show me information about the nerve",
+              "expected": "info",
+              "actual": "control"
+            }
+          ]
+        }
+      },
+      {
+        "metric_name": "Entity Resolution Accuracy",
+        "tier": "Tier 1 - Critical",
+        "score": 16,
+        "max_score": 16,
+        "percentage": 100.0,
+        "status": "PASS",
+        "details": {
+          "correct": [
+            {
+              "input": "turn on handles",
+              "expected": "handles",
+              "actual": "handles"
+            },
+            {
+              "input": "activate the handles",
+              "expected": "handles",
+              "actual": "handles"
+            },
+            {
+              "input": "enable handles",
+              "expected": "handles",
+              "actual": "handles"
+            },
+            {
+              "input": "show me the handles",
+              "expected": "handles",
+              "actual": "handles"
+            },
+            {
+              "input": "turn on xray flashlight",
+              "expected": "xray_flashlight",
+              "actual": "xray_flashlight"
+            },
+            {
+              "input": "activate nerve overlay",
+              "expected": "show_nerve",
+              "actual": "show_nerve"
+            },
+            {
+              "input": "show sinuses",
+              "expected": "show_sinus",
+              "actual": "show_sinus"
+            },
+            {
+              "input": "turn off handles",
+              "expected": "handles",
+              "actual": "handles"
+            },
+            {
+              "input": "deactivate handles",
+              "expected": "handles",
+              "actual": "handles"
+            },
+            {
+              "input": "disable xray flashlight",
+              "expected": "xray_flashlight",
+              "actual": "xray_flashlight"
+            },
+            {
+              "input": "hide nerve",
+              "expected": "show_nerve",
+              "actual": "show_nerve"
+            },
+            {
+              "input": "give me implant size 4 x 11.5",
+              "expected": "implants",
+              "actual": "implants"
+            },
+            {
+              "input": "provide me with implant 3.5 x 8",
+              "expected": "implants",
+              "actual": "implants"
+            },
+            {
+              "input": "show me the dental implants",
+              "expected": "implants",
+              "actual": "implants"
+            },
+            {
+              "input": "can you please turn on the handles for me",
+              "expected": "handles",
+              "actual": "handles"
+            },
+            {
+              "input": "I would like to activate the xray flashlight",
+              "expected": "xray_flashlight",
+              "actual": "xray_flashlight"
+            }
+          ],
+          "incorrect": []
+        }
+      },
+      {
+        "metric_name": "Response Type Accuracy",
+        "tier": "Tier 1 - Critical",
+        "score": 30,
+        "max_score": 38,
+        "percentage": 78.94736842105263,
+        "status": "FAIL",
+        "details": {
+          "correct": [
+            {
+              "input": "turn on handles",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "activate the handles",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "enable handles",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "show me the handles",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "turn on xray flashlight",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "activate nerve overlay",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "show sinuses",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "turn off handles",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "deactivate handles",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "disable xray flashlight",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "hide nerve",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "give me implant size 4 x 11.5",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "provide me with implant 3.5 x 8",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "what are sinuses",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "what is the nerve",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "what are handles",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "what is xray flashlight",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "what are X ray flash light",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "where is the skull",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "where are the implants",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "which side is the menu",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "where is the xray display",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "give me the implant",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "provide me with implants",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "what are the sinuses",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "show me the dental implants",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "turn on",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "set brightness",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "can you please turn on the handles for me",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "I would like to activate the xray flashlight",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            }
+          ],
+          "incorrect": [
+            {
+              "input": "tirn on the handle",
+              "expected": "tool_action",
+              "actual": "clarification"
+            },
+            {
+              "input": "set contrast to 75",
+              "expected": "tool_action",
+              "actual": "clarification"
+            },
+            {
+              "input": "set brightness to 50%",
+              "expected": "tool_action",
+              "actual": "clarification"
+            },
+            {
+              "input": "tell me about implants",
+              "expected": "answer",
+              "actual": "clarification"
+            },
+            {
+              "input": "turnn on handles",
+              "expected": "tool_action",
+              "actual": "clarification"
+            },
+            {
+              "input": "activat the handles",
+              "expected": "tool_action",
+              "actual": "clarification"
+            },
+            {
+              "input": "what is",
+              "expected": "clarification",
+              "actual": "ERROR: 'answer'"
+            },
+            {
+              "input": "could you show me information about the nerve",
+              "expected": "answer",
+              "actual": "tool_action"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "tier2_important": {
+    "score": 9,
+    "max_score": 10,
+    "percentage": 90.0,
+    "results": [
+      {
+        "metric_name": "Value Parsing Accuracy",
+        "tier": "Tier 2 - Important",
+        "score": 2,
+        "max_score": 2,
+        "percentage": 100.0,
+        "status": "PASS",
+        "details": {
+          "correct": [
+            {
+              "input": "give me implant size 4 x 11.5",
+              "expected": {
+                "height_y_mm": 4.0,
+                "length_z_mm": 11.5
+              },
+              "actual": {
+                "height_y_mm": 4.0,
+                "length_z_mm": 11.5
+              }
+            },
+            {
+              "input": "provide me with implant 3.5 x 8",
+              "expected": {
+                "height_y_mm": 3.5,
+                "length_z_mm": 8.0
+              },
+              "actual": {
+                "height_y_mm": 3.5,
+                "length_z_mm": 8.0
+              }
+            }
+          ],
+          "incorrect": []
+        }
+      },
+      {
+        "metric_name": "Ambiguity Handling",
+        "tier": "Tier 2 - Important",
+        "score": 2,
+        "max_score": 3,
+        "percentage": 66.66666666666666,
+        "status": "FAIL",
+        "details": {
+          "correct": [
+            {
+              "input": "turn on",
+              "expected": "clarification",
+              "actual": "clarification"
+            },
+            {
+              "input": "set brightness",
+              "expected": "clarification",
+              "actual": "clarification"
+            }
+          ],
+          "incorrect": [
+            {
+              "input": "what is",
+              "expected": "clarification",
+              "actual": "ERROR: 'answer'"
+            }
+          ]
+        }
+      },
+      {
+        "metric_name": "Medical Context Accuracy",
+        "tier": "Tier 2 - Important",
+        "score": 5,
+        "max_score": 5,
+        "percentage": 100.0,
+        "status": "PASS",
+        "details": {
+          "correct": [
+            {
+              "input": "what are sinuses",
+              "expected_contains": "maxillary sinuses",
+              "actual_answer": "sinus overlay: Maxillary sinuses are air-filled cavities in the upper jawbone that must be avoided during implant placement to prevent complications."
+            },
+            {
+              "input": "what is the nerve",
+              "expected_contains": "mandibular nerve",
+              "actual_answer": "nerve overlay: The mandibular nerve (inferior alveolar nerve) runs through the mandibular canal and must be avoided during implant placement to prevent nerve damage and numbness."
+            },
+            {
+              "input": "what are handles",
+              "expected_contains": "grabbable UI",
+              "actual_answer": "handles: Handles are grabbable UI affordances used to adjust or manipulate scene elements precisely."
+            },
+            {
+              "input": "what is xray flashlight",
+              "expected_contains": "spotlight overlay",
+              "actual_answer": "X‑ray flashlight: X-ray flashlight is a spotlight overlay that reveals detailed X-ray information where aimed, helping to examine specific areas of the anatomy."
+            },
+            {
+              "input": "what are X ray flash light",
+              "expected_contains": "spotlight overlay",
+              "actual_answer": "X‑ray flashlight: X-ray flashlight is a spotlight overlay that reveals detailed X-ray information where aimed, helping to examine specific areas of the anatomy."
+            }
+          ],
+          "incorrect": []
+        }
+      }
+    ]
+  },
+  "tier3_nice_to_have": {
+    "score": 300.939492225647,
+    "max_score": 507,
+    "percentage": 59.35690181965424,
+    "results": [
+      {
+        "metric_name": "Typo Robustness",
+        "tier": "Tier 3 - Nice-to-Have",
+        "score": 2,
+        "max_score": 4,
+        "percentage": 50.0,
+        "status": "WARNING",
+        "details": {
+          "correct": [
+            {
+              "input": "what are the sinuses",
+              "expected": "answer",
+              "actual": "answer"
+            },
+            {
+              "input": "show me the dental implants",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            }
+          ],
+          "incorrect": [
+            {
+              "input": "turnn on handles",
+              "expected": "tool_action",
+              "actual": "clarification"
+            },
+            {
+              "input": "activat the handles",
+              "expected": "tool_action",
+              "actual": "clarification"
+            }
+          ]
+        }
+      },
+      {
+        "metric_name": "Complex Phrasing",
+        "tier": "Tier 3 - Nice-to-Have",
+        "score": 2,
+        "max_score": 3,
+        "percentage": 66.66666666666666,
+        "status": "WARNING",
+        "details": {
+          "correct": [
+            {
+              "input": "can you please turn on the handles for me",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            },
+            {
+              "input": "I would like to activate the xray flashlight",
+              "expected": "tool_action",
+              "actual": "tool_action"
+            }
+          ],
+          "incorrect": [
+            {
+              "input": "could you show me information about the nerve",
+              "expected": "answer",
+              "actual": "tool_action"
+            }
+          ]
+        }
+      },
+      {
+        "metric_name": "Response Time",
+        "tier": "Tier 3 - Nice-to-Have",
+        "score": 296.939492225647,
+        "max_score": 500,
+        "percentage": 246.23202486798422,
+        "status": "PASS",
+        "details": {
+          "response_times": [
+            {
+              "input": "turn on handles",
+              "time_ms": 2.000093460083008
+            },
+            {
+              "input": "activate the handles",
+              "time_ms": 1.0364055633544922
+            },
+            {
+              "input": "enable handles",
+              "time_ms": 1.1026859283447266
+            },
+            {
+              "input": "show me the handles",
+              "time_ms": 0.9129047393798828
+            },
+            {
+              "input": "tirn on the handle",
+              "time_ms": 2016.5014266967773
+            },
+            {
+              "input": "turn on xray flashlight",
+              "time_ms": 2.0351409912109375
+            },
+            {
+              "input": "activate nerve overlay",
+              "time_ms": 0.9987354278564453
+            },
+            {
+              "input": "show sinuses",
+              "time_ms": 2.000570297241211
+            },
+            {
+              "input": "turn off handles",
+              "time_ms": 1.9831657409667969
+            },
+            {
+              "input": "deactivate handles",
+              "time_ms": 2.0339488983154297
+            }
+          ],
+          "summary": {
+            "average_ms": 203.06050777435303,
+            "max_ms": 2016.5014266967773,
+            "min_ms": 0.9129047393798828,
+            "target_ms": 500
+          }
+        }
+      }
+    ]
+  },
+  "all_results": [
+    {
+      "metric_name": "Intent Classification Accuracy",
+      "tier": "Tier 1 - Critical",
+      "score": 30,
+      "max_score": 38,
+      "percentage": 78.94736842105263,
+      "status": "FAIL",
+      "details": {
+        "correct": [
+          {
+            "input": "turn on handles",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "activate the handles",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "enable handles",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "show me the handles",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "turn on xray flashlight",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "activate nerve overlay",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "show sinuses",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "turn off handles",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "deactivate handles",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "disable xray flashlight",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "hide nerve",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "give me implant size 4 x 11.5",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "provide me with implant 3.5 x 8",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "what are sinuses",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "what is the nerve",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "what are handles",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "what is xray flashlight",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "what are X ray flash light",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "where is the skull",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "where are the implants",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "which side is the menu",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "where is the xray display",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "give me the implant",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "provide me with implants",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "what are the sinuses",
+            "expected": "info",
+            "actual": "info"
+          },
+          {
+            "input": "show me the dental implants",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "turn on",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "set brightness",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "can you please turn on the handles for me",
+            "expected": "control",
+            "actual": "control"
+          },
+          {
+            "input": "I would like to activate the xray flashlight",
+            "expected": "control",
+            "actual": "control"
+          }
+        ],
+        "incorrect": [
+          {
+            "input": "tirn on the handle",
+            "expected": "control",
+            "actual": "clarification"
+          },
+          {
+            "input": "set contrast to 75",
+            "expected": "control",
+            "actual": "clarification"
+          },
+          {
+            "input": "set brightness to 50%",
+            "expected": "control",
+            "actual": "clarification"
+          },
+          {
+            "input": "tell me about implants",
+            "expected": "info",
+            "actual": "clarification"
+          },
+          {
+            "input": "turnn on handles",
+            "expected": "control",
+            "actual": "clarification"
+          },
+          {
+            "input": "activat the handles",
+            "expected": "control",
+            "actual": "clarification"
+          },
+          {
+            "input": "what is",
+            "expected": "clarification",
+            "actual": "ERROR: 'answer'"
+          },
+          {
+            "input": "could you show me information about the nerve",
+            "expected": "info",
+            "actual": "control"
+          }
+        ]
+      }
+    },
+    {
+      "metric_name": "Entity Resolution Accuracy",
+      "tier": "Tier 1 - Critical",
+      "score": 16,
+      "max_score": 16,
+      "percentage": 100.0,
+      "status": "PASS",
+      "details": {
+        "correct": [
+          {
+            "input": "turn on handles",
+            "expected": "handles",
+            "actual": "handles"
+          },
+          {
+            "input": "activate the handles",
+            "expected": "handles",
+            "actual": "handles"
+          },
+          {
+            "input": "enable handles",
+            "expected": "handles",
+            "actual": "handles"
+          },
+          {
+            "input": "show me the handles",
+            "expected": "handles",
+            "actual": "handles"
+          },
+          {
+            "input": "turn on xray flashlight",
+            "expected": "xray_flashlight",
+            "actual": "xray_flashlight"
+          },
+          {
+            "input": "activate nerve overlay",
+            "expected": "show_nerve",
+            "actual": "show_nerve"
+          },
+          {
+            "input": "show sinuses",
+            "expected": "show_sinus",
+            "actual": "show_sinus"
+          },
+          {
+            "input": "turn off handles",
+            "expected": "handles",
+            "actual": "handles"
+          },
+          {
+            "input": "deactivate handles",
+            "expected": "handles",
+            "actual": "handles"
+          },
+          {
+            "input": "disable xray flashlight",
+            "expected": "xray_flashlight",
+            "actual": "xray_flashlight"
+          },
+          {
+            "input": "hide nerve",
+            "expected": "show_nerve",
+            "actual": "show_nerve"
+          },
+          {
+            "input": "give me implant size 4 x 11.5",
+            "expected": "implants",
+            "actual": "implants"
+          },
+          {
+            "input": "provide me with implant 3.5 x 8",
+            "expected": "implants",
+            "actual": "implants"
+          },
+          {
+            "input": "show me the dental implants",
+            "expected": "implants",
+            "actual": "implants"
+          },
+          {
+            "input": "can you please turn on the handles for me",
+            "expected": "handles",
+            "actual": "handles"
+          },
+          {
+            "input": "I would like to activate the xray flashlight",
+            "expected": "xray_flashlight",
+            "actual": "xray_flashlight"
+          }
+        ],
+        "incorrect": []
+      }
+    },
+    {
+      "metric_name": "Response Type Accuracy",
+      "tier": "Tier 1 - Critical",
+      "score": 30,
+      "max_score": 38,
+      "percentage": 78.94736842105263,
+      "status": "FAIL",
+      "details": {
+        "correct": [
+          {
+            "input": "turn on handles",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "activate the handles",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "enable handles",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "show me the handles",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "turn on xray flashlight",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "activate nerve overlay",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "show sinuses",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "turn off handles",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "deactivate handles",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "disable xray flashlight",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "hide nerve",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "give me implant size 4 x 11.5",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "provide me with implant 3.5 x 8",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "what are sinuses",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "what is the nerve",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "what are handles",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "what is xray flashlight",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "what are X ray flash light",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "where is the skull",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "where are the implants",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "which side is the menu",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "where is the xray display",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "give me the implant",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "provide me with implants",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "what are the sinuses",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "show me the dental implants",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "turn on",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "set brightness",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "can you please turn on the handles for me",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "I would like to activate the xray flashlight",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          }
+        ],
+        "incorrect": [
+          {
+            "input": "tirn on the handle",
+            "expected": "tool_action",
+            "actual": "clarification"
+          },
+          {
+            "input": "set contrast to 75",
+            "expected": "tool_action",
+            "actual": "clarification"
+          },
+          {
+            "input": "set brightness to 50%",
+            "expected": "tool_action",
+            "actual": "clarification"
+          },
+          {
+            "input": "tell me about implants",
+            "expected": "answer",
+            "actual": "clarification"
+          },
+          {
+            "input": "turnn on handles",
+            "expected": "tool_action",
+            "actual": "clarification"
+          },
+          {
+            "input": "activat the handles",
+            "expected": "tool_action",
+            "actual": "clarification"
+          },
+          {
+            "input": "what is",
+            "expected": "clarification",
+            "actual": "ERROR: 'answer'"
+          },
+          {
+            "input": "could you show me information about the nerve",
+            "expected": "answer",
+            "actual": "tool_action"
+          }
+        ]
+      }
+    },
+    {
+      "metric_name": "Value Parsing Accuracy",
+      "tier": "Tier 2 - Important",
+      "score": 2,
+      "max_score": 2,
+      "percentage": 100.0,
+      "status": "PASS",
+      "details": {
+        "correct": [
+          {
+            "input": "give me implant size 4 x 11.5",
+            "expected": {
+              "height_y_mm": 4.0,
+              "length_z_mm": 11.5
+            },
+            "actual": {
+              "height_y_mm": 4.0,
+              "length_z_mm": 11.5
+            }
+          },
+          {
+            "input": "provide me with implant 3.5 x 8",
+            "expected": {
+              "height_y_mm": 3.5,
+              "length_z_mm": 8.0
+            },
+            "actual": {
+              "height_y_mm": 3.5,
+              "length_z_mm": 8.0
+            }
+          }
+        ],
+        "incorrect": []
+      }
+    },
+    {
+      "metric_name": "Ambiguity Handling",
+      "tier": "Tier 2 - Important",
+      "score": 2,
+      "max_score": 3,
+      "percentage": 66.66666666666666,
+      "status": "FAIL",
+      "details": {
+        "correct": [
+          {
+            "input": "turn on",
+            "expected": "clarification",
+            "actual": "clarification"
+          },
+          {
+            "input": "set brightness",
+            "expected": "clarification",
+            "actual": "clarification"
+          }
+        ],
+        "incorrect": [
+          {
+            "input": "what is",
+            "expected": "clarification",
+            "actual": "ERROR: 'answer'"
+          }
+        ]
+      }
+    },
+    {
+      "metric_name": "Medical Context Accuracy",
+      "tier": "Tier 2 - Important",
+      "score": 5,
+      "max_score": 5,
+      "percentage": 100.0,
+      "status": "PASS",
+      "details": {
+        "correct": [
+          {
+            "input": "what are sinuses",
+            "expected_contains": "maxillary sinuses",
+            "actual_answer": "sinus overlay: Maxillary sinuses are air-filled cavities in the upper jawbone that must be avoided during implant placement to prevent complications."
+          },
+          {
+            "input": "what is the nerve",
+            "expected_contains": "mandibular nerve",
+            "actual_answer": "nerve overlay: The mandibular nerve (inferior alveolar nerve) runs through the mandibular canal and must be avoided during implant placement to prevent nerve damage and numbness."
+          },
+          {
+            "input": "what are handles",
+            "expected_contains": "grabbable UI",
+            "actual_answer": "handles: Handles are grabbable UI affordances used to adjust or manipulate scene elements precisely."
+          },
+          {
+            "input": "what is xray flashlight",
+            "expected_contains": "spotlight overlay",
+            "actual_answer": "X‑ray flashlight: X-ray flashlight is a spotlight overlay that reveals detailed X-ray information where aimed, helping to examine specific areas of the anatomy."
+          },
+          {
+            "input": "what are X ray flash light",
+            "expected_contains": "spotlight overlay",
+            "actual_answer": "X‑ray flashlight: X-ray flashlight is a spotlight overlay that reveals detailed X-ray information where aimed, helping to examine specific areas of the anatomy."
+          }
+        ],
+        "incorrect": []
+      }
+    },
+    {
+      "metric_name": "Typo Robustness",
+      "tier": "Tier 3 - Nice-to-Have",
+      "score": 2,
+      "max_score": 4,
+      "percentage": 50.0,
+      "status": "WARNING",
+      "details": {
+        "correct": [
+          {
+            "input": "what are the sinuses",
+            "expected": "answer",
+            "actual": "answer"
+          },
+          {
+            "input": "show me the dental implants",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          }
+        ],
+        "incorrect": [
+          {
+            "input": "turnn on handles",
+            "expected": "tool_action",
+            "actual": "clarification"
+          },
+          {
+            "input": "activat the handles",
+            "expected": "tool_action",
+            "actual": "clarification"
+          }
+        ]
+      }
+    },
+    {
+      "metric_name": "Complex Phrasing",
+      "tier": "Tier 3 - Nice-to-Have",
+      "score": 2,
+      "max_score": 3,
+      "percentage": 66.66666666666666,
+      "status": "WARNING",
+      "details": {
+        "correct": [
+          {
+            "input": "can you please turn on the handles for me",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          },
+          {
+            "input": "I would like to activate the xray flashlight",
+            "expected": "tool_action",
+            "actual": "tool_action"
+          }
+        ],
+        "incorrect": [
+          {
+            "input": "could you show me information about the nerve",
+            "expected": "answer",
+            "actual": "tool_action"
+          }
+        ]
+      }
+    },
+    {
+      "metric_name": "Response Time",
+      "tier": "Tier 3 - Nice-to-Have",
+      "score": 296.939492225647,
+      "max_score": 500,
+      "percentage": 246.23202486798422,
+      "status": "PASS",
+      "details": {
+        "response_times": [
+          {
+            "input": "turn on handles",
+            "time_ms": 2.000093460083008
+          },
+          {
+            "input": "activate the handles",
+            "time_ms": 1.0364055633544922
+          },
+          {
+            "input": "enable handles",
+            "time_ms": 1.1026859283447266
+          },
+          {
+            "input": "show me the handles",
+            "time_ms": 0.9129047393798828
+          },
+          {
+            "input": "tirn on the handle",
+            "time_ms": 2016.5014266967773
+          },
+          {
+            "input": "turn on xray flashlight",
+            "time_ms": 2.0351409912109375
+          },
+          {
+            "input": "activate nerve overlay",
+            "time_ms": 0.9987354278564453
+          },
+          {
+            "input": "show sinuses",
+            "time_ms": 2.000570297241211
+          },
+          {
+            "input": "turn off handles",
+            "time_ms": 1.9831657409667969
+          },
+          {
+            "input": "deactivate handles",
+            "time_ms": 2.0339488983154297
+          }
+        ],
+        "summary": {
+          "average_ms": 203.06050777435303,
+          "max_ms": 2016.5014266967773,
+          "min_ms": 0.9129047393798828,
+          "target_ms": 500
+        }
+      }
+    }
+  ]
+}

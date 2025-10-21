@@ -8,7 +8,7 @@
     {"name": "dental_tray", "location": "right", "synonyms": ["dental tray"]},
 
     {"name": "handles", "type": "switch", "synonyms": ["handle", "handles"]},
-    {"name": "xray_flashlight", "type": "switch", "synonyms": ["xray flashlight", "x-ray flashlight", "x ray flashlight"]},
+    {"name": "xray_flashlight", "type": "switch", "synonyms": ["xray flashlight", "x-ray flashlight", "x ray flashlight", "flashlight", "flash light", "xray flash light", "x-ray flash light"]},
     {"name": "show_nerve", "type": "switch", "synonyms": ["nerve", "nerve overlay", "show nerve"]},
     {"name": "show_sinus", "type": "switch", "synonyms": ["sinus", "sinuses", "sinus overlay", "show sinus", "show sinuses"]},
     {"name": "align_implants", "type": "switch", "synonyms": ["align implants", "alignment"]},

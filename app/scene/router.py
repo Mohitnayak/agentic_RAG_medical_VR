@@ -38,11 +38,21 @@ class DecisionRouter:
         # 1. Intent classification (ML-only approach)
         intent_label, intent_confidence = classifier.classify(text)
         
-        # LLM tie-breaker for low confidence cases
+        # Fuzzy matching fallback for typos when semantic classifier fails
         if intent_confidence < intent_threshold:
-            llm_label, llm_confidence = self._llm_classify(text)
-            if llm_confidence > intent_confidence:
-                intent_label, intent_confidence = llm_label, llm_confidence
+            fuzzy_label, fuzzy_confidence = self._fuzzy_intent_match(text)
+            if fuzzy_confidence > intent_confidence:
+                intent_label, intent_confidence = fuzzy_label, fuzzy_confidence
+        
+        # LLM tie-breaker for low confidence cases (only if Ollama is available)
+        if intent_confidence < intent_threshold:
+            try:
+                llm_label, llm_confidence = self._llm_classify(text)
+                if llm_confidence > intent_confidence:
+                    intent_label, intent_confidence = llm_label, llm_confidence
+            except Exception:
+                # Ollama not available, skip LLM fallback
+                pass
         
         # Special handling for implant requests
         if "implant" in text.lower() and ("give me" in text.lower() or "provide me" in text.lower()):
@@ -73,11 +83,20 @@ class DecisionRouter:
                 entity_results.append((name, conf, data))
                 seen_entities.add(name)
         
-        # Get best entity
+        # Get best entity - prefer semantic over lexical, and longer/more specific matches
         best_entity = None
         entity_confidence = 0.0
         if entity_results:
-            best_entity = max(entity_results, key=lambda x: x[1])
+            # Sort by confidence, but prefer semantic entities and longer entity names
+            def entity_score(entity):
+                name, conf, data = entity
+                # Boost semantic entities (they come first in the list)
+                semantic_boost = 0.1 if name in [e[0] for e in semantic_entities] else 0.0
+                # Boost longer entity names (more specific)
+                length_boost = len(name) * 0.01
+                return conf + semantic_boost + length_boost
+            
+            best_entity = max(entity_results, key=entity_score)
             entity_confidence = best_entity[1]
         
         # 3. Value parsing
@@ -117,6 +136,75 @@ class DecisionRouter:
             confidence_logger.log_clarification(text, fallback_response["clarifications"], {})
             return fallback_response
     
+    def _fuzzy_intent_match(self, text: str) -> Tuple[str, float]:
+        """Fuzzy matching fallback for typos and variations."""
+        try:
+            from rapidfuzz.fuzz import partial_ratio
+            
+            text_lower = text.lower()
+            
+            # Common patterns - prioritize info questions over control actions
+            control_patterns = {
+                "info_definition": [
+                    "what is", "what are", "definition", "tell me about", "information",
+                    "wat is", "wat are", "definiton", "infomation"
+                ],
+                "info_location": [
+                    "where is", "where are", "which side", "what side",
+                    "were is", "were are", "wich side", "wat side"
+                ],
+                "control_on": [
+                    "turn on", "activate", "enable", "switch on", "start", "show", 
+                    "give me", "provide me", "bring up", "turnn on", "tirn on",
+                    "turnn", "tirn", "activat", "enabl", "swich on"
+                ],
+                "control_off": [
+                    "turn off", "deactivate", "disable", "switch off", "stop", "hide",
+                    "turnn off", "tirn off", "deactivat", "disabl", "swich off"
+                ]
+            }
+            
+            best_match = "none"
+            best_score = 0.0
+            
+            for intent, patterns in control_patterns.items():
+                for pattern in patterns:
+                    if pattern in text_lower:
+                        # Calculate fuzzy score for the pattern
+                        score = partial_ratio(pattern, text_lower) / 100.0
+                        
+                        # Boost info patterns to prioritize them over control patterns
+                        if intent.startswith("info_"):
+                            score = min(score + 0.3, 1.0)
+                        
+                        if score > best_score:
+                            best_score = score
+                            best_match = intent
+            
+            # Boost confidence for exact matches
+            if best_score > 0.8:
+                best_score = min(best_score + 0.2, 1.0)
+            
+            return best_match, best_score
+            
+        except ImportError:
+            # Fallback to simple pattern matching
+            text_lower = text.lower()
+            
+            if any(word in text_lower for word in ["turn on", "activate", "enable", "show", "start"]):
+                return "control_on", 0.6
+            elif any(word in text_lower for word in ["turn off", "deactivate", "disable", "hide", "stop"]):
+                return "control_off", 0.6
+            elif any(word in text_lower for word in ["what is", "what are", "definition"]):
+                return "info_definition", 0.6
+            elif any(word in text_lower for word in ["where is", "where are", "which side"]):
+                return "info_location", 0.6
+            
+            return "none", 0.0
+        except Exception as e:
+            print(f"Warning: Fuzzy matching failed: {e}")
+            return "none", 0.0
+
     def _llm_classify(self, text: str) -> Tuple[str, float]:
         """LLM-based intent classification as tie-breaker."""
         try:
@@ -232,15 +320,29 @@ Respond with only the label name (e.g., "control_on", "info_definition", etc.). 
             }
         
         entity_name, entity_conf, entity_data = entity
+        canonical_name = entity_data.get("name", entity_name)  # Use canonical name from entity data
         
         if intent_label == "info_definition":
-            definition = entity_data.get("definition", f"{entity_name} is a VR scene element.")
-            return {
-                "type": "answer",
-                "answer": definition,
-                "context_used": False,
-                "confidence": entity_conf
-            }
+            # Try to get definition from the definitions resolver first
+            from app.scene.defs import resolve_definition
+            definition = resolve_definition(text)
+            
+            if definition:
+                return {
+                    "type": "answer",
+                    "answer": definition,
+                    "context_used": False,
+                    "confidence": entity_conf
+                }
+            else:
+                # Fallback to entity data or generic message
+                definition = entity_data.get("definition", f"{canonical_name} is a VR scene element.")
+                return {
+                    "type": "answer",
+                    "answer": definition,
+                    "context_used": False,
+                    "confidence": entity_conf
+                }
         elif intent_label == "info_location":
             location = entity_data.get("location", f"{entity_name} location is not specified.")
             return {

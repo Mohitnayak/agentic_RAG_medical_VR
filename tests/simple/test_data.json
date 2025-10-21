@@ -1,0 +1,398 @@
+{
+  "test_cases": [
+    {
+      "input": "turn on handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "activate the handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "enable handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "show me the handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "tirn on the handle",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "turn on xray flashlight",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "xray_flashlight",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "activate nerve overlay",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "show_nerve",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "show sinuses",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "show_sinus",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "turn off handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "off",
+      "category": "control_off"
+    },
+    {
+      "input": "deactivate handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "off",
+      "category": "control_off"
+    },
+    {
+      "input": "disable xray flashlight",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "xray_flashlight",
+      "expected_operation": "set",
+      "expected_value": "off",
+      "category": "control_off"
+    },
+    {
+      "input": "hide nerve",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "show_nerve",
+      "expected_operation": "set",
+      "expected_value": "off",
+      "category": "control_off"
+    },
+    {
+      "input": "set contrast to 75",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "contrast",
+      "expected_operation": "set",
+      "expected_value": "75",
+      "category": "control_value"
+    },
+    {
+      "input": "set brightness to 50%",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "brightness",
+      "expected_operation": "set",
+      "expected_value": "50",
+      "category": "control_value"
+    },
+    {
+      "input": "give me implant size 4 x 11.5",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "implants",
+      "expected_operation": "set",
+      "expected_value": {"height_y_mm": 4.0, "length_z_mm": 11.5},
+      "category": "control_value"
+    },
+    {
+      "input": "provide me with implant 3.5 x 8",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "implants",
+      "expected_operation": "set",
+      "expected_value": {"height_y_mm": 3.5, "length_z_mm": 8.0},
+      "category": "control_value"
+    },
+    {
+      "input": "what are sinuses",
+      "expected_type": "answer",
+      "expected_contains": "maxillary sinuses",
+      "category": "info_definition"
+    },
+    {
+      "input": "what is the nerve",
+      "expected_type": "answer",
+      "expected_contains": "mandibular nerve",
+      "category": "info_definition"
+    },
+    {
+      "input": "what are handles",
+      "expected_type": "answer",
+      "expected_contains": "grabbable UI",
+      "category": "info_definition"
+    },
+    {
+      "input": "what is xray flashlight",
+      "expected_type": "answer",
+      "expected_contains": "spotlight overlay",
+      "category": "info_definition"
+    },
+    {
+      "input": "what are X ray flash light",
+      "expected_type": "answer",
+      "expected_contains": "spotlight overlay",
+      "category": "info_definition"
+    },
+    {
+      "input": "tell me about implants",
+      "expected_type": "answer",
+      "expected_contains": "virtual fixtures",
+      "category": "info_definition"
+    },
+    {
+      "input": "where is the skull",
+      "expected_type": "answer",
+      "expected_contains": "left",
+      "category": "info_location"
+    },
+    {
+      "input": "where are the implants",
+      "expected_type": "answer",
+      "expected_contains": "right",
+      "category": "info_location"
+    },
+    {
+      "input": "which side is the menu",
+      "expected_type": "answer",
+      "expected_contains": "center",
+      "category": "info_location"
+    },
+    {
+      "input": "where is the xray display",
+      "expected_type": "answer",
+      "expected_contains": "above",
+      "category": "info_location"
+    },
+    {
+      "input": "give me the implant",
+      "expected_type": "clarification",
+      "category": "size_request"
+    },
+    {
+      "input": "provide me with implants",
+      "expected_type": "clarification",
+      "category": "size_request"
+    },
+    {
+      "input": "turnn on handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "edge_cases"
+    },
+    {
+      "input": "activat the handles",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "edge_cases"
+    },
+    {
+      "input": "what are the sinuses",
+      "expected_type": "answer",
+      "expected_contains": "maxillary sinuses",
+      "category": "edge_cases"
+    },
+    {
+      "input": "show me the dental implants",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "implants",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "edge_cases"
+    },
+    {
+      "input": "turn on",
+      "expected_type": "clarification",
+      "category": "ambiguous"
+    },
+    {
+      "input": "what is",
+      "expected_type": "clarification",
+      "category": "ambiguous"
+    },
+    {
+      "input": "set brightness",
+      "expected_type": "clarification",
+      "category": "ambiguous"
+    },
+    {
+      "input": "can you please turn on the handles for me",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "complex_phrasing"
+    },
+    {
+      "input": "I would like to activate the xray flashlight",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "xray_flashlight",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "complex_phrasing"
+    },
+    {
+      "input": "could you show me information about the nerve",
+      "expected_type": "answer",
+      "expected_contains": "mandibular nerve",
+      "category": "complex_phrasing"
+    },
+    {
+      "input": "switch on the xray flashlight",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "xray_flashlight",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "control_on"
+    },
+    {
+      "input": "disable sinus overlay",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "show_sinus",
+      "expected_operation": "set",
+      "expected_value": "off",
+      "category": "control_off"
+    },
+    {
+      "input": "set contrast to 25%",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "contrast",
+      "expected_operation": "set",
+      "expected_value": "25",
+      "category": "control_value"
+    },
+    {
+      "input": "increase brightness by 10",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "brightness",
+      "expected_operation": "set",
+      "expected_value": "10",
+      "category": "control_value"
+    },
+    {
+      "input": "what is the dental tray",
+      "expected_type": "answer",
+      "expected_contains": "dental tray",
+      "category": "info_definition"
+    },
+    {
+      "input": "where is the menu bar located",
+      "expected_type": "answer",
+      "expected_contains": "center",
+      "category": "info_location"
+    },
+    {
+      "input": "give me implant size 3.5 x 8",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "implants",
+      "expected_operation": "set",
+      "expected_value": {
+        "height_y_mm": 3.5,
+        "length_z_mm": 8
+      },
+      "category": "control_value"
+    },
+    {
+      "input": "turn off",
+      "expected_type": "clarification",
+      "category": "ambiguous"
+    },
+    {
+      "input": "set",
+      "expected_type": "clarification",
+      "category": "ambiguous"
+    },
+    {
+      "input": "activat the handl",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "edge_cases"
+    },
+    {
+      "input": "swich off the xray",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "xray_flashlight",
+      "expected_operation": "set",
+      "expected_value": "off",
+      "category": "edge_cases"
+    },
+    {
+      "input": "would you mind turning on the handles for me",
+      "expected_type": "tool_action",
+      "expected_tool": "control",
+      "expected_target": "handles",
+      "expected_operation": "set",
+      "expected_value": "on",
+      "category": "complex_phrasing"
+    },
+    {
+      "input": "I need to see the nerve information",
+      "expected_type": "answer",
+      "expected_contains": "mandibular nerve",
+      "category": "complex_phrasing"
+    },
+    {
+      "input": "please provide me with implant dimensions",
+      "expected_type": "clarification",
+      "category": "size_request"
+    }
+  ]
+}
