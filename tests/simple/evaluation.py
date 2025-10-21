@@ -15,6 +15,7 @@ from dataclasses import dataclass
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.scene.router import decision_router
+from app.schemas import validate_response
 
 
 @dataclass
@@ -493,7 +494,11 @@ class SystemEvaluator:
         return results
     
     def export_to_csv(self, results: List[EvaluationResult], filename: str = "evaluation_results.csv"):
-        """Export detailed results to CSV format - one row per test case."""
+        """Export detailed results to CSV format - one row per test case.
+
+        Also records fallback (i.e., cases where structured output would fail
+        validation and thus the API would switch to RAG).
+        """
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
@@ -504,10 +509,14 @@ class SystemEvaluator:
                 'Expected_Value', 'Actual_Value', 'Expected_Contains', 'Actual_Answer',
                 'Intent_Status', 'Entity_Status', 'Response_Status', 'Value_Status',
                 'Ambiguity_Status', 'Medical_Status', 'Typo_Status', 'Phrasing_Status',
-                'Overall_Status', 'Error_Message'
+                'Overall_Status', 'Fallback', 'Fallback_Reason', 'Error_Message'
             ])
             
             test_id = 1
+            # Aggregate fallback stats
+            self._fallback_total = 0
+            self._fallback_by_category: Dict[str, int] = {}
+            self._fallback_reasons: Dict[str, int] = {}
             
             # Process each test case once
             for test_case in self.test_cases:
@@ -529,17 +538,35 @@ class SystemEvaluator:
                 # Get actual values by running the test
                 try:
                     response = decision_router.route(input_text)
+                    # Validate to detect fallback conditions (invalid structured output)
+                    validation = validate_response(response)
+                    is_fallback = "error" in validation
+                    fallback_reason = validation.get("error", "") if is_fallback else ""
+
                     actual_type = response.get("type", "")
                     actual_target = response.get("arguments", {}).get("target", "")
                     actual_value = response.get("arguments", {}).get("value", "")
                     actual_answer = response.get("answer", "")
                     error_message = ""
+
+                    # Track fallback stats
+                    if is_fallback:
+                        self._fallback_total += 1
+                        self._fallback_by_category[category] = self._fallback_by_category.get(category, 0) + 1
+                        if fallback_reason:
+                            self._fallback_reasons[fallback_reason] = self._fallback_reasons.get(fallback_reason, 0) + 1
                 except Exception as e:
                     actual_type = "ERROR"
                     actual_target = ""
                     actual_value = ""
                     actual_answer = ""
                     error_message = str(e)
+                    is_fallback = True
+                    fallback_reason = f"Exception: {error_message}"
+                    # Track fallback on exception
+                    self._fallback_total += 1
+                    self._fallback_by_category[category] = self._fallback_by_category.get(category, 0) + 1
+                    self._fallback_reasons[fallback_reason] = self._fallback_reasons.get(fallback_reason, 0) + 1
                 
                 # Determine status for each metric
                 intent_status = "PASS" if actual_type == expected_type else "FAIL"
@@ -582,11 +609,28 @@ class SystemEvaluator:
                     typo_status,
                     phrasing_status,
                     overall_status,
+                    "YES" if is_fallback else "NO",
+                    fallback_reason,
                     error_message
                 ])
                 test_id += 1
         
         print(f"Detailed results exported to {filename} - {test_id-1} test cases")
+
+    def compute_fallback_summary(self) -> Dict[str, Any]:
+        """Return fallback stats collected during CSV export."""
+        total_cases = len(self.test_cases)
+        fallback_total = getattr(self, "_fallback_total", 0)
+        by_category = getattr(self, "_fallback_by_category", {})
+        reasons = getattr(self, "_fallback_reasons", {})
+        rate = (fallback_total / total_cases * 100.0) if total_cases else 0.0
+        return {
+            "total_cases": total_cases,
+            "fallback_total": fallback_total,
+            "fallback_rate": rate,
+            "by_category": by_category,
+            "reasons": reasons,
+        }
     
     def print_tabular_report(self, results: List[EvaluationResult]):
         """Print comprehensive tabular report."""
@@ -712,6 +756,7 @@ def main():
     
     # Export to CSV
     evaluator.export_to_csv(results, "evaluation_results.csv")
+    fallback_summary = evaluator.compute_fallback_summary()
     
     # Save results to JSON
     results_data = {
@@ -734,7 +779,8 @@ def main():
                 "failures": r.failures
             }
             for r in results
-        ]
+        ],
+        "fallback_summary": fallback_summary
     }
     
     with open("evaluation_results.json", 'w', encoding='utf-8') as f:
@@ -742,6 +788,22 @@ def main():
     
     print(f"\nDetailed results saved to evaluation_results.json")
     print(f"CSV export completed: evaluation_results.csv")
+
+    # Print fallback summary
+    print("\n" + "=" * 80)
+    print("FALLBACK SUMMARY (Structured-output validation → RAG)")
+    print("=" * 80)
+    print(f"Total cases: {fallback_summary['total_cases']}")
+    print(f"Fallback total: {fallback_summary['fallback_total']}")
+    print(f"Fallback rate: {fallback_summary['fallback_rate']:.1f}%")
+    if fallback_summary.get('by_category'):
+        print("By category:")
+        for cat, cnt in sorted(fallback_summary['by_category'].items()):
+            print(f"  {cat}: {cnt}")
+    if fallback_summary.get('reasons'):
+        print("Top reasons:")
+        for reason, cnt in sorted(fallback_summary['reasons'].items(), key=lambda x: x[1], reverse=True)[:5]:
+            print(f"  {cnt} × {reason}")
     return exit_code
 
 

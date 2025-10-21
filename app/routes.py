@@ -5,7 +5,7 @@ from typing import Any, Dict
 
 from flask import Blueprint, request
 
-from .schemas import ChatRequest, IngestRequest, NotesAddRequest, NotesEndRequest, NotesStartRequest, validate_response
+from .schemas import ChatRequest, IngestRequest, NotesAddRequest, NotesEndRequest, NotesStartRequest, validate_response, validate_control_arguments
 from .scene.router import decision_router
 from .models import db, Chunk, Document
 from .rag.chunker import split_text
@@ -103,6 +103,98 @@ def chat():
         out = _agent.respond(req.message, context, notes_active, has_context)
         return out, 200
     
+    # If router asks for clarification, try answering via RAG automatically using available context
+    if validated_response.get("type") == "clarification":
+        assert _retriever is not None and _vector_store is not None and _agent is not None
+        retrieved = _retriever.retrieve(req.message, k=6)
+        chunk_ids = [meta.get("chunk_id") for _, _, meta in retrieved]
+        rows = Chunk.query.filter(Chunk.id.in_(chunk_ids)).all() if chunk_ids else []
+        lookup = {c.id: c.text for c in rows}
+        context = _retriever.build_context(req.message, retrieved, lookup)
+        has_context = len(context.strip()) > 0
+        
+        from .models import Note
+        notes_active = db.session.query(Note.id).filter_by(session_id=req.sessionId, finalized=False).first() is not None
+        out = _agent.respond(req.message, context, notes_active, has_context)
+        # If no useful context, return a clear LLM-style apology/intent and include original clarifications
+        if not has_context:
+            return {
+                "type": "clarification",
+                "message": "I couldn't find enough context to answer directly. Could you specify a bit more?",
+                "clarifications": validated_response.get("clarifications", []),
+                "confidence": validated_response.get("confidence", {})
+            }, 200
+        return out, 200
+
+    # For tool actions, perform a dry validation of arguments; on failure, use RAG + LLM to reply naturally
+    if validated_response.get("type") == "tool_action":
+        args = validated_response.get("arguments") or {}
+        arg_check = validate_control_arguments(args)
+        if "error" in arg_check:
+            assert _retriever is not None and _vector_store is not None and _agent is not None
+            # Friendly preamble then try to answer via RAG
+            retrieved = _retriever.retrieve(req.message, k=6)
+            chunk_ids = [meta.get("chunk_id") for _, _, meta in retrieved]
+            rows = Chunk.query.filter(Chunk.id.in_(chunk_ids)).all() if chunk_ids else []
+            lookup = {c.id: c.text for c in rows}
+            context = _retriever.build_context(req.message, retrieved, lookup)
+            has_context = len(context.strip()) > 0
+            from .models import Note
+            notes_active = db.session.query(Note.id).filter_by(session_id=req.sessionId, finalized=False).first() is not None
+            out = _agent.respond(req.message, context, notes_active, has_context)
+            if not has_context:
+                # Polite, natural reply with guidance
+                target = args.get("target") or "this"
+                return {
+                    "type": "clarification",
+                    "message": f"I couldn't validate the request for {target}. Let me check my knowledge base... I couldn't find enough context. What exact value/element should I use?",
+                    "clarifications": [
+                        "For values: try a number, e.g., 'set brightness to 50'",
+                        "For overlays: e.g., 'turn on sinus overlay'",
+                    ],
+                    "confidence": {"intent": 0.7, "entity": 0.3, "value": 0.2}
+                }, 200
+            return out, 200
+    
+    # Add natural-language narration for successful tool actions
+    if validated_response.get("type") == "tool_action":
+        args = (validated_response.get("arguments") or {}).copy()
+        target = str(args.get("target") or "target").replace("_", " ")
+        operation = args.get("operation")
+        value = args.get("value")
+        # Try LLM-based acknowledgement first; fall back to template
+        narration = None
+        try:
+            client = OllamaClient()
+            action_desc = (
+                f"operation='{operation}', target='{target}', value='{value}'"
+            )
+            prompt = (
+                "You are a concise assistant in a VR dental planning app.\n"
+                "Given the action that will be performed, produce ONE short confirmation line to the user.\n"
+                "Be clear and natural; do not add extra explanations.\n\n"
+                f"User message: {req.message}\n"
+                f"Action: {action_desc}\n\n"
+                "Reply with one sentence only."
+            )
+            narration = client.chat(prompt).strip()
+        except Exception:
+            narration = None
+
+        if not narration:
+            # Template fallback
+            if operation == "set" and isinstance(value, str) and value in {"on", "off"}:
+                narration = f"The {target} is now {value}."
+            elif operation == "set" and isinstance(value, (int, float)):
+                narration = f"Setting {target} to {value}."
+            elif operation == "toggle":
+                narration = f"Toggling {target}."
+
+        if narration:
+            enriched = dict(validated_response)
+            enriched["narration"] = narration
+            return enriched, 200
+
     return validated_response, 200
 
 

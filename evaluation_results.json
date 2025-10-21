@@ -1,26 +1,38 @@
 {
   "overall_performance": {
-    "critical_total": 104,
-    "critical_max": 132,
-    "important_total": 8,
-    "important_max": 17,
-    "enhancement_total": 10,
+    "critical_total": 92,
+    "critical_max": 122,
+    "important_total": 9,
+    "important_max": 15,
+    "enhancement_total": 3,
     "enhancement_max": 11
   },
   "detailed_results": [
     {
       "metric_name": "Intent Classification",
       "priority": "Critical",
-      "score": 44,
+      "score": 37,
       "max_score": 52,
-      "percentage": 84.61538461538461,
+      "percentage": 71.15384615384616,
       "status": "FAIL",
       "failures": [
         {
-          "input": "what is xray flashlight",
-          "expected": "info",
-          "actual": "control",
-          "category": "info_definition"
+          "input": "tirn on the handle",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "control_on"
+        },
+        {
+          "input": "give me implant size 4 x 11.5",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "control_value"
+        },
+        {
+          "input": "provide me with implant 3.5 x 8",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "control_value"
         },
         {
           "input": "tell me about implants",
@@ -29,10 +41,16 @@
           "category": "info_definition"
         },
         {
-          "input": "where are the implants",
-          "expected": "info",
+          "input": "turnn on handles",
+          "expected": "control",
           "actual": "clarification",
-          "category": "info_location"
+          "category": "edge_cases"
+        },
+        {
+          "input": "activat the handles",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "edge_cases"
         },
         {
           "input": "show me the dental implants",
@@ -41,126 +59,89 @@
           "category": "edge_cases"
         },
         {
-          "input": "turn on",
-          "expected": "clarification",
-          "actual": "control",
-          "category": "ambiguous"
-        },
-        {
           "input": "what is",
           "expected": "clarification",
-          "actual": "info",
+          "actual": "ERROR: 'answer'",
           "category": "ambiguous"
         },
         {
-          "input": "set brightness",
-          "expected": "clarification",
+          "input": "could you show me information about the nerve",
+          "expected": "info",
           "actual": "control",
-          "category": "ambiguous"
+          "category": "complex_phrasing"
         },
         {
-          "input": "turn off",
-          "expected": "clarification",
-          "actual": "control",
-          "category": "ambiguous"
+          "input": "switch on the xray flashlight",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "control_on"
+        },
+        {
+          "input": "give me implant size 3.5 x 8",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "control_value"
+        },
+        {
+          "input": "activat the handl",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
+          "input": "swich off the xray",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
+          "input": "would you mind turning on the handles for me",
+          "expected": "control",
+          "actual": "clarification",
+          "category": "complex_phrasing"
+        },
+        {
+          "input": "I need to see the nerve information",
+          "expected": "info",
+          "actual": "clarification",
+          "category": "complex_phrasing"
         }
       ]
     },
     {
       "metric_name": "Entity Resolution",
       "priority": "Critical",
-      "score": 16,
-      "max_score": 28,
-      "percentage": 57.14285714285714,
-      "status": "FAIL",
-      "failures": [
-        {
-          "input": "tirn on the handle",
-          "expected": "handles",
-          "actual": "handle",
-          "category": "control_on"
-        },
-        {
-          "input": "activate nerve overlay",
-          "expected": "show_nerve",
-          "actual": "nerve overlay",
-          "category": "control_on"
-        },
-        {
-          "input": "show sinuses",
-          "expected": "show_sinus",
-          "actual": "show sinuses",
-          "category": "control_on"
-        },
-        {
-          "input": "hide nerve",
-          "expected": "show_nerve",
-          "actual": "show nerve",
-          "category": "control_off"
-        },
-        {
-          "input": "set contrast to 75",
-          "expected": "contrast",
-          "actual": "contrast panel",
-          "category": "control_value"
-        },
-        {
-          "input": "give me implant size 4 x 11.5",
-          "expected": "implants",
-          "actual": "dental implants",
-          "category": "control_value"
-        },
-        {
-          "input": "provide me with implant 3.5 x 8",
-          "expected": "implants",
-          "actual": "dental implants",
-          "category": "control_value"
-        },
-        {
-          "input": "disable sinus overlay",
-          "expected": "show_sinus",
-          "actual": "sinus overlay",
-          "category": "control_off"
-        },
-        {
-          "input": "set contrast to 25%",
-          "expected": "contrast",
-          "actual": "contrast panel",
-          "category": "control_value"
-        },
-        {
-          "input": "give me implant size 3.5 x 8",
-          "expected": "implants",
-          "actual": "dental implants",
-          "category": "control_value"
-        },
-        {
-          "input": "activat the handl",
-          "expected": "handles",
-          "actual": "handle",
-          "category": "edge_cases"
-        },
-        {
-          "input": "swich off the xray",
-          "expected": "xray_flashlight",
-          "actual": "xray_display",
-          "category": "edge_cases"
-        }
-      ]
+      "score": 18,
+      "max_score": 18,
+      "percentage": 100.0,
+      "status": "PASS",
+      "failures": []
     },
     {
       "metric_name": "Response Type",
       "priority": "Critical",
-      "score": 44,
+      "score": 37,
       "max_score": 52,
-      "percentage": 84.61538461538461,
+      "percentage": 71.15384615384616,
       "status": "FAIL",
       "failures": [
         {
-          "input": "what is xray flashlight",
-          "expected": "answer",
-          "actual": "tool_action",
-          "category": "info_definition"
+          "input": "tirn on the handle",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "control_on"
+        },
+        {
+          "input": "give me implant size 4 x 11.5",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "control_value"
+        },
+        {
+          "input": "provide me with implant 3.5 x 8",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "control_value"
         },
         {
           "input": "tell me about implants",
@@ -169,10 +150,16 @@
           "category": "info_definition"
         },
         {
-          "input": "where are the implants",
-          "expected": "answer",
+          "input": "turnn on handles",
+          "expected": "tool_action",
           "actual": "clarification",
-          "category": "info_location"
+          "category": "edge_cases"
+        },
+        {
+          "input": "activat the handles",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "edge_cases"
         },
         {
           "input": "show me the dental implants",
@@ -181,37 +168,61 @@
           "category": "edge_cases"
         },
         {
-          "input": "turn on",
-          "expected": "clarification",
-          "actual": "tool_action",
-          "category": "ambiguous"
-        },
-        {
           "input": "what is",
           "expected": "clarification",
-          "actual": "answer",
+          "actual": "ERROR: 'answer'",
           "category": "ambiguous"
         },
         {
-          "input": "set brightness",
-          "expected": "clarification",
+          "input": "could you show me information about the nerve",
+          "expected": "answer",
           "actual": "tool_action",
-          "category": "ambiguous"
+          "category": "complex_phrasing"
         },
         {
-          "input": "turn off",
-          "expected": "clarification",
-          "actual": "tool_action",
-          "category": "ambiguous"
+          "input": "switch on the xray flashlight",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "control_on"
+        },
+        {
+          "input": "give me implant size 3.5 x 8",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "control_value"
+        },
+        {
+          "input": "activat the handl",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
+          "input": "swich off the xray",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
+          "input": "would you mind turning on the handles for me",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "complex_phrasing"
+        },
+        {
+          "input": "I need to see the nerve information",
+          "expected": "answer",
+          "actual": "clarification",
+          "category": "complex_phrasing"
         }
       ]
     },
     {
       "metric_name": "Value Parsing",
       "priority": "Important",
-      "score": 3,
-      "max_score": 7,
-      "percentage": 42.857142857142854,
+      "score": 0,
+      "max_score": 4,
+      "percentage": 0.0,
       "status": "FAIL",
       "failures": [
         {
@@ -245,33 +256,15 @@
     {
       "metric_name": "Ambiguity Handling",
       "priority": "Important",
-      "score": 1,
+      "score": 4,
       "max_score": 5,
-      "percentage": 20.0,
-      "status": "FAIL",
+      "percentage": 80.0,
+      "status": "PASS",
       "failures": [
-        {
-          "input": "turn on",
-          "expected": "clarification",
-          "actual": "tool_action",
-          "category": "ambiguous"
-        },
         {
           "input": "what is",
           "expected": "clarification",
-          "actual": "answer",
-          "category": "ambiguous"
-        },
-        {
-          "input": "set brightness",
-          "expected": "clarification",
-          "actual": "tool_action",
-          "category": "ambiguous"
-        },
-        {
-          "input": "turn off",
-          "expected": "clarification",
-          "actual": "tool_action",
+          "actual": "ERROR: 'answer'",
           "category": "ambiguous"
         }
       ]
@@ -279,9 +272,9 @@
     {
       "metric_name": "Medical Context",
       "priority": "Important",
-      "score": 4,
-      "max_score": 5,
-      "percentage": 80.0,
+      "score": 5,
+      "max_score": 6,
+      "percentage": 83.33333333333334,
       "status": "FAIL",
       "failures": [
         {
@@ -295,13 +288,37 @@
     {
       "metric_name": "Typo Robustness",
       "priority": "Enhancement",
-      "score": 5,
+      "score": 1,
       "max_score": 6,
-      "percentage": 83.33333333333334,
+      "percentage": 16.666666666666664,
       "status": "WARNING",
       "failures": [
         {
+          "input": "turnn on handles",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
+          "input": "activat the handles",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
           "input": "show me the dental implants",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
+          "input": "activat the handl",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "edge_cases"
+        },
+        {
+          "input": "swich off the xray",
           "expected": "tool_action",
           "actual": "clarification",
           "category": "edge_cases"
@@ -311,11 +328,41 @@
     {
       "metric_name": "Complex Phrasing",
       "priority": "Enhancement",
-      "score": 5,
+      "score": 2,
       "max_score": 5,
-      "percentage": 100.0,
-      "status": "PASS",
-      "failures": []
+      "percentage": 40.0,
+      "status": "WARNING",
+      "failures": [
+        {
+          "input": "could you show me information about the nerve",
+          "expected": "answer",
+          "actual": "tool_action",
+          "category": "complex_phrasing"
+        },
+        {
+          "input": "would you mind turning on the handles for me",
+          "expected": "tool_action",
+          "actual": "clarification",
+          "category": "complex_phrasing"
+        },
+        {
+          "input": "I need to see the nerve information",
+          "expected": "answer",
+          "actual": "clarification",
+          "category": "complex_phrasing"
+        }
+      ]
     }
-  ]
+  ],
+  "fallback_summary": {
+    "total_cases": 52,
+    "fallback_total": 1,
+    "fallback_rate": 1.9230769230769231,
+    "by_category": {
+      "ambiguous": 1
+    },
+    "reasons": {
+      "Exception: 'answer'": 1
+    }
+  }
 }

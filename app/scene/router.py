@@ -35,6 +35,55 @@ class DecisionRouter:
         value_threshold = thresholds.get("value_confidence", 0.4)
         router_cutoff = thresholds.get("router_cutoff", 0.3)
         
+        # 0. Deterministic fast-path for explicit numeric controls (e.g., "set brightness to 50%")
+        # Try to detect numeric value and a value target lexically from config before ML routing
+        fast_value = numeric_parser.parse_value(text)
+        if fast_value:
+            fast_value_num, fast_value_conf = fast_value
+            target_name, matched_candidates = self._detect_value_target(text)
+            if target_name:
+                # Return direct control action with detected target and parsed value
+                return {
+                    "type": "tool_action",
+                    "tool": "control",
+                    "arguments": {
+                        "hand": "right",
+                        "target": target_name,
+                        "operation": "set",
+                        "value": fast_value_num,
+                    },
+                    "confidence": {
+                        "intent": 0.85,
+                        "entity": 0.75,
+                        "value": fast_value_conf,
+                    },
+                }
+            # If we detected a number but not a clear value target → targeted clarification
+            # Suggest likely value controls from config with ranges
+            cfg = load_config()
+            ranges_cfg = cfg.get("ranges", {})
+            likely = []
+            for name in ("contrast", "brightness"):
+                r = ranges_cfg.get(name, {})
+                r_min = r.get("min")
+                r_max = r.get("max")
+                if r_min is not None and r_max is not None:
+                    likely.append(f"{name} ({r_min}–{r_max})")
+                else:
+                    likely.append(name)
+            return {
+                "type": "clarification",
+                "message": f"I detected value {fast_value_num}. Which control should I apply it to?",
+                "clarifications": [
+                    f"Choose one: {', '.join(likely)}",
+                ],
+                "confidence": {
+                    "intent": 0.7,
+                    "entity": 0.2,
+                    "value": fast_value_conf,
+                },
+            }
+
         # 1. Intent classification (ML-only approach)
         intent_label, intent_confidence = classifier.classify(text)
         
@@ -64,6 +113,23 @@ class DecisionRouter:
                 # No specific size - ask for size
                 intent_label = "size_request"
                 intent_confidence = 0.8
+        # Additional disambiguation for "show me the implants" – offer definition vs overlay control
+        if "show me" in text.lower() and "implant" in text.lower():
+            # If confidence is low, ask targeted clarification instead of generic one
+            if intent_confidence < 0.7:
+                return {
+                    "type": "clarification",
+                    "message": "Do you want to show the implants overlay or hear a quick definition?",
+                    "clarifications": [
+                        "Turn on implants overlay",
+                        "Tell me about implants",
+                    ],
+                    "confidence": {
+                        "intent": intent_confidence,
+                        "entity": 0.4,
+                        "value": 0.0,
+                    },
+                }
         
         # 2. Entity resolution
         semantic_entities = entity_resolver.resolve(text, k=3)
@@ -113,7 +179,18 @@ class DecisionRouter:
         
         # Check if we need clarification
         if overall_confidence < router_cutoff:
-            clarification_response = self._generate_clarification(text, intent_label, intent_confidence, best_entity, entity_confidence, value_result, value_confidence)
+            # Provide richer, context-aware clarifications using top entity candidates
+            top_candidates = entity_results[:5] if entity_results else []
+            clarification_response = self._generate_clarification(
+                text,
+                intent_label,
+                intent_confidence,
+                best_entity,
+                entity_confidence,
+                value_result,
+                value_confidence,
+                top_candidates,
+            )
             confidence_logger.log_clarification(text, clarification_response["clarifications"], clarification_response["confidence"])
             return clarification_response
         
@@ -135,6 +212,42 @@ class DecisionRouter:
             fallback_response = self._generate_fallback_response(text)
             confidence_logger.log_clarification(text, fallback_response["clarifications"], {})
             return fallback_response
+
+    def _detect_value_target(self, text: str) -> Tuple[Optional[str], List[str]]:
+        """Lexically detect a value-control target (e.g., brightness/contrast) from config.
+
+        Returns (best_target_name, matched_names)
+        """
+        cfg = load_config()
+        entity_cfg = cfg.get("entities", {}).get("entities", [])
+        text_lower = text.lower()
+        matches: List[str] = []
+
+        # Build candidate list: only entities with type==value
+        candidates: List[Tuple[str, List[str]]] = []
+        for e in entity_cfg:
+            if e.get("type") == "value":
+                name = e.get("name", "")
+                syns = [s.lower() for s in e.get("synonyms", [])]
+                candidates.append((name, syns))
+
+        for name, syns in candidates:
+            if name and name in text_lower:
+                matches.append(name)
+                continue
+            for s in syns:
+                if s and s in text_lower:
+                    matches.append(name)
+                    break
+
+        # Deduplicate while preserving order
+        seen = set()
+        matches = [m for m in matches if not (m in seen or seen.add(m))]
+
+        if len(matches) == 1:
+            return matches[0], matches
+        else:
+            return None, matches
     
     def _fuzzy_intent_match(self, text: str) -> Tuple[str, float]:
         """Fuzzy matching fallback for typos and variations."""
@@ -236,30 +349,104 @@ Respond with only the label name (e.g., "control_on", "info_definition", etc.). 
             print(f"Warning: LLM classification failed: {e}")
             return "none", 0.0
     
-    def _generate_clarification(self, text: str, intent_label: str, intent_conf: float, 
-                               entity: Optional[Tuple], entity_conf: float,
-                               value_result: Optional[Tuple], value_conf: float) -> Dict[str, Any]:
-        """Generate clarification request."""
-        clarifications = []
-        
-        if intent_conf < 0.6:
-            clarifications.append("Could you clarify what you'd like to do? (e.g., 'turn on', 'show me', 'what is')")
-        
-        if entity_conf < 0.5:
-            clarifications.append("Which element are you referring to? (e.g., 'handles', 'implants', 'x-ray')")
-        
-        if value_result and value_conf < 0.4:
-            clarifications.append("What value would you like to set? (e.g., '50%', '4 x 11.5')")
-        
+    def _generate_clarification(
+        self,
+        text: str,
+        intent_label: str,
+        intent_conf: float,
+        entity: Optional[Tuple],
+        entity_conf: float,
+        value_result: Optional[Tuple],
+        value_conf: float,
+        entity_candidates: List[Tuple[str, float, Dict[str, Any]]],
+    ) -> Dict[str, Any]:
+        """Generate context-aware clarification suggestions based on input and candidates."""
+        clarifications: List[str] = []
+        text_lower = text.lower()
+        detected_value = None
+        if value_result:
+            detected_value = value_result[0]
+
+        # Load entities/ranges for targeted suggestions
+        try:
+            cfg = load_config()
+            entity_cfg = cfg.get("entities", {}).get("entities", [])
+            ranges_cfg = cfg.get("ranges", {})
+        except Exception:
+            entity_cfg, ranges_cfg = [], {}
+
+        # Build helpful suggestion lists
+        switch_targets = [e for e in entity_cfg if e.get("type") == "switch"]
+        value_targets = [e for e in entity_cfg if e.get("type") == "value"]
+
+        # 1) If a numeric value is present but entity is unclear → ask which control to apply it to
+        if detected_value is not None and (entity is None or entity_conf < 0.5):
+            options = []
+            for e in value_targets:
+                name = e.get("name", "")
+                r = ranges_cfg.get(name, {})
+                r_min = r.get("min")
+                r_max = r.get("max")
+                if r_min is not None and r_max is not None:
+                    options.append(f"{name} ({r_min}–{r_max})")
+                else:
+                    options.append(name)
+            if options:
+                clarifications.append(
+                    f"I detected value {detected_value}. Which control should I apply it to? (e.g., {', '.join(options[:4])})"
+                )
+
+        # 2) If control intent (on/off/toggle) and entity is unclear → suggest top candidates + common switches
+        if intent_label in ("control_on", "control_off") and (entity is None or entity_conf < 0.5):
+            candidate_names = []
+            for n, c, d in entity_candidates[:5]:
+                canonical = d.get("name", n)
+                if canonical not in candidate_names:
+                    candidate_names.append(canonical)
+            # Add common switches if we have room
+            for e in switch_targets:
+                nm = e.get("name", "")
+                if nm and nm not in candidate_names:
+                    candidate_names.append(nm)
+                if len(candidate_names) >= 5:
+                    break
+            if candidate_names:
+                clarifications.append(
+                    f"Which element should I {'turn on' if intent_label=='control_on' else 'turn off'}? (e.g., {', '.join(candidate_names[:5])})"
+                )
+
+        # 3) If info intent and entity unclear → suggest top entity candidates
+        if intent_label in ("info_definition", "info_location") and (entity is None or entity_conf < 0.5):
+            candidate_names = []
+            for n, c, d in entity_candidates[:5]:
+                canonical = d.get("name", n)
+                if canonical not in candidate_names:
+                    candidate_names.append(canonical)
+            if candidate_names:
+                what = "definition" if intent_label == "info_definition" else "location"
+                clarifications.append(
+                    f"Whose {what} do you want? (e.g., {', '.join(candidate_names[:5])})"
+                )
+
+        # 4) If intent confidence is low → ask a light, non-intrusive nudge rather than generic patterns
+        if intent_conf < 0.6 and not clarifications:
+            clarifications.append(
+                "I can help with controls (turn on/off, set values) or info (what/where). What would you like to do?"
+            )
+
+        # 5) If nothing specific generated, provide a minimal fallback clarification
+        if not clarifications:
+            clarifications.append("Could you specify the element or value?")
+
         return {
             "type": "clarification",
-            "message": "I need more information:",
+            "message": "I need a bit more detail:",
             "clarifications": clarifications,
             "confidence": {
                 "intent": intent_conf,
                 "entity": entity_conf,
-                "value": value_conf
-            }
+                "value": value_conf,
+            },
         }
     
     def _generate_control_action(self, intent_label: str, entity: Optional[Tuple], 
@@ -274,6 +461,7 @@ Respond with only the label name (e.g., "control_on", "info_definition", etc.). 
         
         entity_name, entity_conf, entity_data = entity
         entity_type = entity_data.get("type", "unknown")
+        canonical_target = entity_data.get("name", entity_name)
         
         # Determine operation and value
         operation = "toggle"
@@ -288,6 +476,30 @@ Respond with only the label name (e.g., "control_on", "info_definition", etc.). 
         elif intent_label == "control_value" and value_result:
             operation = "set"
             value, _ = value_result
+        elif intent_label == "control_value" and not value_result:
+            # Missing numeric value → ask a targeted value clarification using ranges for this control
+            try:
+                cfg = load_config()
+                ranges_cfg = cfg.get("ranges", {})
+                r = ranges_cfg.get(canonical_target, {})
+                r_min = r.get("min")
+                r_max = r.get("max")
+                range_hint = f" ({r_min}–{r_max})" if r_min is not None and r_max is not None else ""
+            except Exception:
+                range_hint = ""
+            return {
+                "type": "clarification",
+                "message": f"What value should I set for {canonical_target}{range_hint}?",
+                "clarifications": [
+                    f"Example: set {canonical_target} to 50",
+                    f"Example: {canonical_target} 75%",
+                ],
+                "confidence": {
+                    "intent": 0.8,
+                    "entity": entity_conf,
+                    "value": 0.0,
+                }
+            }
         
         # Determine hand based on entity type
         hand = "right"  # Default to right hand
@@ -299,7 +511,7 @@ Respond with only the label name (e.g., "control_on", "info_definition", etc.). 
             "tool": "control",
             "arguments": {
                 "hand": hand,
-                "target": entity_name,
+                "target": canonical_target,
                 "operation": operation,
                 "value": value
             },

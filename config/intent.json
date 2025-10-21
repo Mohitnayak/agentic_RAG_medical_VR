@@ -26,5 +26,8 @@
       "size_request": "User asks for implants but doesn't specify size dimensions",
       "none": "No clear intent or ambiguous request"
     }
+  },
+  "clarifications": {
+    "llm_enabled": true
   }
 }
