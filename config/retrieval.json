@@ -1,0 +1,15 @@
+{
+  "hybrid_weights": {
+    "semantic": 0.7,
+    "lexical": 0.3
+  },
+  "top_k": {
+    "semantic": 10,
+    "lexical": 5,
+    "final": 8
+  },
+  "thresholds": {
+    "min_similarity": 0.3,
+    "min_lexical_score": 0.1
+  }
+}

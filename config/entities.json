@@ -1,0 +1,19 @@
+{
+  "entities": [
+    {"name": "skull_model", "location": "left", "synonyms": ["skull", "skull model", "dental model"]},
+    {"name": "implants", "location": "right", "synonyms": ["implant", "dental implants", "implant tray"]},
+    {"name": "menu_bar", "location": "center", "synonyms": ["menu", "menu bar"]},
+    {"name": "xray_display", "location": "above the skull", "synonyms": ["x-ray", "x ray", "xray", "xray display"]},
+    {"name": "control_panel", "location": "far-left", "synonyms": ["control panel", "contrast panel", "brightness panel"]},
+    {"name": "dental_tray", "location": "right", "synonyms": ["dental tray"]},
+
+    {"name": "handles", "type": "switch", "synonyms": ["handle", "handles"]},
+    {"name": "xray_flashlight", "type": "switch", "synonyms": ["xray flashlight", "x-ray flashlight", "x ray flashlight"]},
+    {"name": "show_nerve", "type": "switch", "synonyms": ["nerve", "nerve overlay", "show nerve"]},
+    {"name": "show_sinus", "type": "switch", "synonyms": ["sinus", "sinuses", "sinus overlay", "show sinus", "show sinuses"]},
+    {"name": "align_implants", "type": "switch", "synonyms": ["align implants", "alignment"]},
+
+    {"name": "contrast", "type": "value", "range": [0, 100], "synonyms": ["contrast"]},
+    {"name": "brightness", "type": "value", "range": [0, 100], "synonyms": ["brightness"]}
+  ]
+}

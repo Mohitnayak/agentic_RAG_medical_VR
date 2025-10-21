@@ -1,0 +1,8 @@
+{
+  "contrast": { "min": 0, "max": 100 },
+  "brightness": { "min": 0, "max": 100 },
+  "implants": {
+    "height_y_mm": { "min": 3.0, "max": 4.8 },
+    "length_z_mm": { "min": 6.0, "max": 17.0 }
+  }
+}

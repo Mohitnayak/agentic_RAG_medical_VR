@@ -1,0 +1,21 @@
+{
+  "verbs": {
+    "on": ["turn on", "enable", "switch on", "start", "show", "give me", "provide me with"],
+    "off": ["turn off", "disable", "switch off", "stop", "hide", "deactivate"],
+    "toggle": ["toggle"],
+    "info": ["what is", "what are", "definition of", "tell me about", "information on", "information about", "info on"],
+    "location": ["where is", "where are", "which side", "what side"],
+    "value": ["set", "increase", "decrease"]
+  },
+  "thresholds": {
+    "intent_confidence": 0.6,
+    "entity_confidence": 0.5,
+    "value_confidence": 0.4,
+    "router_cutoff": 0.3
+  },
+  "classifier": {
+    "enabled": true,
+    "model": "facebook/bart-large-mnli",
+    "labels": ["control_on", "control_off", "control_value", "info_definition", "info_location", "size_request", "none"]
+  }
+}
