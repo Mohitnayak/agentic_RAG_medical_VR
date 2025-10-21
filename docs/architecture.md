@@ -8,31 +8,31 @@ This document provides a high-level block diagram and component overview of the 
 flowchart TB
     UI[Web UI / HTTP Client] --> API[Flask API /api/v1/chat]
 
-    subgraph Config[Configuration Layer (config/*.json)]
-        INTENT_CFG[intent.json\n- verbs, thresholds, classifier]
-        ENTITIES_CFG[entities.json\n- scene elements, synonyms, locations]
-        RANGES_CFG[ranges.json\n- numeric ranges, implant limits]
-        RETRIEVAL_CFG[retrieval.json\n- hybrid weights, top-k]
+    subgraph Config[Configuration Layer: config]
+        INTENT_CFG[intent.json<br/>verbs, thresholds, classifier]
+        ENTITIES_CFG[entities.json<br/>scene elements, synonyms, locations]
+        RANGES_CFG[ranges.json<br/>numeric ranges, implant limits]
+        RETRIEVAL_CFG[retrieval.json<br/>hybrid weights, top-k]
     end
 
     API --> ROUTER[DecisionRouter]
     Config --> ROUTER
 
-    ROUTER --> IC[Intent Classifier\n(rule-based ML)]
-    ROUTER --> ER[Entity Resolver\n(semantic + lexical)]
-    ROUTER --> NP[Numeric Parser\n(Recognizers-Text)]
+    ROUTER --> IC[Intent Classifier<br/>(rule-based ML)]
+    ROUTER --> ER[Entity Resolver<br/>(semantic + lexical)]
+    ROUTER --> NP[Numeric Parser<br/>(Recognizers-Text)]
 
     IC --> CONF[Confidence Aggregation]
     ER --> CONF
     NP --> CONF
 
-    CONF --> DECIDE{confidence ≥ router_cutoff?}
+    CONF --> DECIDE{confidence >= router_cutoff?}
     DECIDE -->|yes| ACTIONS[Route to Action]
     DECIDE -->|no| CLARIFY[Targeted Clarification]
 
-    ACTIONS --> CTRL[Tool Action\n{"tool":"control", args}]
-    ACTIONS --> INFO[Info Answer\n(definition/location)]
-    ACTIONS --> SIZE[Size Request Flow\n(implants)]
+    ACTIONS --> CTRL[Tool Action (control JSON)]
+    ACTIONS --> INFO[Info Answer (definition/location)]
+    ACTIONS --> SIZE[Size Request Flow (implants)]
 
     CTRL --> VALID[Pydantic Validation]
     INFO --> VALID
@@ -40,9 +40,9 @@ flowchart TB
     VALID --> RESP[Structured Response]
     RESP --> API
 
-    %% Validation failure → fallback RAG
+    %% Validation failure -> fallback RAG
     API -->|validation error| RAG[RAG Fallback]
-    RAG --> RET[Retriever\n(hybrid fusion)]
+    RAG --> RET[Retriever<br/>(hybrid fusion)]
     RET --> LEX[Lexical scorer]
     RET --> EMB[Embeddings (Ollama)]
     RET --> VS[FAISS Vector Store]
