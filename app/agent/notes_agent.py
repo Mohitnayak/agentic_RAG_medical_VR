@@ -50,6 +50,83 @@ Respond with a JSON object matching the schema provided."""
     def get_agent_description(self) -> str:
         return "Notes Agent - Manages note-taking, recording, and documentation"
 
+    def process(self, query: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
+        """Process a user query with special handling for notes functionality."""
+        try:
+            query_lower = query.lower().strip()
+            
+            # Handle start notes requests
+            start_phrases = ['start taking notes', 'start notes', 'begin notes', 'start recording', 'take notes']
+            if any(phrase in query_lower for phrase in start_phrases):
+                return {
+                    "type": "note_action",
+                    "agent": "Notes Agent",
+                    "intent": "start_notes",
+                    "function": "start_notes",
+                    "message": "Notes are now active! You can type your notes below.",
+                    "state": "on",
+                    "note_text": None,
+                    "confidence": 0.9,
+                    "context_used": False
+                }
+            
+            # Handle end notes requests
+            end_phrases = ['stop taking notes', 'end notes', 'stop notes', 'done taking notes', 'finish notes', 'stop recording']
+            if any(phrase in query_lower for phrase in end_phrases):
+                return {
+                    "type": "note_action",
+                    "agent": "Notes Agent",
+                    "intent": "end_notes",
+                    "function": "end_notes",
+                    "message": "Notes session ended. Your notes have been saved.",
+                    "state": "off",
+                    "note_text": None,
+                    "confidence": 0.9,
+                    "context_used": False
+                }
+            
+            # Handle note retrieval requests
+            retrieve_phrases = ['show me my notes', 'give me my notes', 'show notes', 'my notes', 'notes i took', 'last notes']
+            if any(phrase in query_lower for phrase in retrieve_phrases):
+                return {
+                    "type": "note_action",
+                    "agent": "Notes Agent",
+                    "intent": "retrieve_notes",
+                    "function": "retrieve_notes",
+                    "message": "Here are your saved notes:",
+                    "state": "off",
+                    "note_text": None,
+                    "confidence": 0.9,
+                    "context_used": False
+                }
+            
+            # Handle add note requests (when user provides content)
+            add_phrases = ['note this:', 'add note:', 'record:', 'note:']
+            for phrase in add_phrases:
+                if phrase in query_lower:
+                    # Extract content after the phrase
+                    content_start = query_lower.find(phrase) + len(phrase)
+                    content = query[content_start:].strip()
+                    if content:
+                        return {
+                            "type": "note_action",
+                            "agent": "Notes Agent",
+                            "intent": "add_note",
+                            "function": "add_note",
+                            "message": f"Note added: {content}",
+                            "state": "on",
+                            "note_text": content,
+                            "confidence": 0.9,
+                            "context_used": False
+                        }
+            
+            # For other queries, use the base class processing
+            return super().process(query, conversation_history)
+            
+        except Exception as e:
+            print(f"Error in Notes Agent processing: {e}")
+            return self._create_error_response(str(e))
+
     # Legacy methods for backward compatibility
     def start(self) -> Dict[str, Any]:
         return {

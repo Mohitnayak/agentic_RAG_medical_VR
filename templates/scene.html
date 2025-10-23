@@ -215,6 +215,78 @@
             color: #374151;
         }
 
+        /* Notes area styles */
+        .notes-area {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notes-title {
+            font-weight: 600;
+            color: #0c4a6e;
+            font-size: 14px;
+        }
+
+        .stop-notes-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .stop-notes-btn:hover {
+            background: #b91c1c;
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 8px;
+            background: #ffffff;
+            color: #111827;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
+        }
+
+        .add-note-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .add-note-btn:hover {
+            background: #0284c7;
+        }
+
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -253,6 +325,17 @@
             <div class="input-group">
                 <input type="text" id="session" class="session-input" placeholder="Session ID (optional)" value="">
             </div>
+            
+            <!-- Notes input area (hidden by default) -->
+            <div id="notes-area" class="notes-area" style="display: none;">
+                <div class="notes-header">
+                    <span class="notes-title">📝 Taking Notes</span>
+                    <button id="stop-notes" class="stop-notes-btn">Stop Notes</button>
+                </div>
+                <textarea id="notes-input" class="notes-input" placeholder="Type your notes here..." rows="3"></textarea>
+                <button id="add-note" class="add-note-btn">Add Note</button>
+            </div>
+            
             <textarea id="message" class="message-input" placeholder="Ask about dental planning, procedures, anatomy, or any dental-related questions..." rows="2"></textarea>
             <button id="send" class="send-button">Send Message</button>
         </div>
@@ -268,8 +351,15 @@
                 this.sessionInput = document.getElementById('session');
                 this.typingIndicator = document.getElementById('typing-indicator');
                 
+                // Notes elements
+                this.notesArea = document.getElementById('notes-area');
+                this.notesInput = document.getElementById('notes-input');
+                this.addNoteBtn = document.getElementById('add-note');
+                this.stopNotesBtn = document.getElementById('stop-notes');
+                
                 this.conversationHistory = [];
                 this.currentSession = this.generateSessionId();
+                this.notesActive = false;
                 
                 this.initializeEventListeners();
                 this.updateSessionDisplay();
@@ -292,6 +382,16 @@
                 this.sessionInput.addEventListener('change', () => {
                     this.currentSession = this.sessionInput.value || this.generateSessionId();
                     this.updateSessionDisplay();
+                });
+
+                // Notes functionality
+                this.addNoteBtn.addEventListener('click', () => this.addNote());
+                this.stopNotesBtn.addEventListener('click', () => this.stopNotes());
+                this.notesInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.addNote();
+                    }
                 });
             }
 
@@ -395,6 +495,16 @@
                     <div class="agent-response">${displayText}</div>
                 `;
 
+                // Handle notes actions
+                if (data.type === 'note_action' || (fallbackJson && fallbackJson.type === 'note_action')) {
+                    const noteData = fallbackJson.type === 'note_action' ? fallbackJson : data;
+                    if (noteData.state === 'on') {
+                        this.showNotesArea();
+                    } else if (noteData.state === 'off') {
+                        this.hideNotesArea();
+                    }
+                }
+
                 // Add JSON output if available
                 if (data.json_output) {
                     content += `<details class="json-output"><summary>Details</summary><pre>${JSON.stringify(data.json_output, null, 2)}</pre></details>`;
@@ -424,6 +534,63 @@
 
             scrollToBottom() {
                 this.chatContent.scrollTop = this.chatContent.scrollHeight;
+            }
+
+            // Notes functionality
+            addNote() {
+                const noteText = this.notesInput.value.trim();
+                if (!noteText) return;
+
+                // Add note to chat
+                this.addMessage(`📝 Note: ${noteText}`, 'user');
+                
+                // Clear notes input
+                this.notesInput.value = '';
+                
+                // Send note to server
+                this.sendNoteToServer(noteText);
+            }
+
+            stopNotes() {
+                this.notesActive = false;
+                this.notesArea.style.display = 'none';
+                this.messageInput.style.display = 'block';
+                
+                // Send stop notes command
+                this.sendMessage('stop taking notes');
+            }
+
+            async sendNoteToServer(noteText) {
+                try {
+                    const response = await fetch('/api/v1/notes/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.currentSession,
+                            text: noteText
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Note saved:', data);
+                } catch (error) {
+                    console.error('Error saving note:', error);
+                }
+            }
+
+            showNotesArea() {
+                this.notesActive = true;
+                this.notesArea.style.display = 'block';
+                this.messageInput.style.display = 'none';
+                this.notesInput.focus();
+            }
+
+            hideNotesArea() {
+                this.notesActive = false;
+                this.notesArea.style.display = 'none';
+                this.messageInput.style.display = 'block';
             }
         }
 
