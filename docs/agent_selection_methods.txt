@@ -1,0 +1,209 @@
+# Agent Selection Methods for VR Dental Planning System
+
+This document outlines different approaches for automatic agent selection in multi-agent systems, with implementation notes and trade-offs.
+
+## Method A: LLM-Based Conversational Negotiation (Implemented)
+
+**Description**: Uses a LangChain supervisor agent that analyzes user queries with LLM to automatically select the best specialized agent.
+
+**Implementation**:
+- Supervisor agent uses LLM to understand user intent
+- Agents communicate in natural language
+- Each agent has defined role + memory
+- Negotiation emerges through conversational turns
+
+**Pros**:
+- Natural language understanding
+- Context-aware decision making
+- Easy to extend with new agents
+- Handles complex queries well
+- Self-documenting through conversation
+
+**Cons**:
+- Requires LLM calls for every query
+- Higher latency
+- More complex error handling
+- Dependency on LLM availability
+
+**Files**:
+- `app/agent/langchain_supervisor.py`
+- `app/agent/base_agent.py`
+- `app/scene/router.py` (refactored)
+
+## Method B: Multi-Agent Bidding System
+
+**Description**: Each agent evaluates the user query and submits a bid with confidence score. The highest bidder handles the request.
+
+**Implementation**:
+```python
+class BiddingSupervisor:
+    def select_agent(self, query: str):
+        bids = []
+        for agent_name, agent in self.agents.items():
+            confidence = agent.evaluate_query(query)
+            bids.append((agent_name, confidence))
+        
+        # Select agent with highest confidence
+        return max(bids, key=lambda x: x[1])[0]
+```
+
+**Pros**:
+- Parallel evaluation
+- Clear confidence metrics
+- Easy to add new agents
+- Transparent decision process
+
+**Cons**:
+- Requires all agents to evaluate every query
+- Higher computational cost
+- May need tie-breaking logic
+- Agents need evaluation methods
+
+**Use Cases**:
+- When you need confidence scores from all agents
+- Complex queries that might involve multiple agents
+- Systems requiring transparency in agent selection
+
+## Method C: Sequential Agent Routing
+
+**Description**: Agents are tried in a predefined order until one accepts the query based on confidence thresholds.
+
+**Implementation**:
+```python
+class SequentialRouter:
+    def __init__(self):
+        self.agent_order = ['info', 'control', 'value', 'notes']
+        self.confidence_threshold = 0.7
+    
+    def route(self, query: str):
+        for agent_name in self.agent_order:
+            agent = self.agents[agent_name]
+            confidence = agent.evaluate_query(query)
+            if confidence >= self.confidence_threshold:
+                return agent.process(query)
+        
+        # Fallback to default agent
+        return self.agents['info'].process(query)
+```
+
+**Pros**:
+- Simple implementation
+- Predictable behavior
+- Low computational cost
+- Easy to debug
+
+**Cons**:
+- Rigid ordering
+- May not select optimal agent
+- Requires careful threshold tuning
+- Less flexible than other methods
+
+**Use Cases**:
+- Simple systems with clear agent priorities
+- When computational efficiency is critical
+- Prototype implementations
+
+## Method D: Rule-Based Classification
+
+**Description**: Uses keyword matching, regex patterns, and rule-based logic to classify queries and route to appropriate agents.
+
+**Implementation**:
+```python
+class RuleBasedRouter:
+    def __init__(self):
+        self.rules = {
+            'info': ['what is', 'define', 'explain', 'where is'],
+            'control': ['turn on', 'turn off', 'show', 'hide'],
+            'value': ['set', 'brightness', 'contrast', 'opacity'],
+            'notes': ['note', 'record', 'document', 'save']
+        }
+    
+    def route(self, query: str):
+        query_lower = query.lower()
+        for agent, keywords in self.rules.items():
+            if any(keyword in query_lower for keyword in keywords):
+                return self.agents[agent].process(query)
+        
+        return self.agents['info'].process(query)
+```
+
+**Pros**:
+- Fast execution
+- Predictable results
+- No external dependencies
+- Easy to understand and modify
+
+**Cons**:
+- Brittle with typos/variations
+- Requires manual rule maintenance
+- Doesn't handle complex queries well
+- Limited flexibility
+
+**Use Cases**:
+- Simple, well-defined domains
+- When speed is critical
+- Systems with limited computational resources
+
+## Method E: Hybrid Approach
+
+**Description**: Combines multiple methods - uses rules for simple cases, LLM for complex queries, and bidding for ambiguous cases.
+
+**Implementation**:
+```python
+class HybridRouter:
+    def route(self, query: str):
+        # Try rule-based first
+        rule_result = self.rule_based_router.route(query)
+        if rule_result.confidence > 0.9:
+            return rule_result
+        
+        # Try LLM for complex queries
+        if self.is_complex_query(query):
+            return self.llm_supervisor.select_agent(query)
+        
+        # Fall back to bidding for ambiguous cases
+        return self.bidding_supervisor.select_agent(query)
+```
+
+**Pros**:
+- Best of multiple approaches
+- Handles various query types
+- Optimized for different scenarios
+- Robust fallback mechanisms
+
+**Cons**:
+- More complex implementation
+- Multiple failure points
+- Harder to debug
+- Requires careful tuning
+
+**Use Cases**:
+- Production systems requiring reliability
+- Mixed query complexity
+- Systems with varying performance requirements
+
+## Performance Comparison
+
+| Method | Speed | Accuracy | Flexibility | Complexity |
+|--------|-------|----------|-------------|------------|
+| LLM-Based | Medium | High | High | High |
+| Bidding | Low | High | Medium | Medium |
+| Sequential | High | Medium | Low | Low |
+| Rule-Based | High | Low | Low | Low |
+| Hybrid | Medium | High | High | High |
+
+## Recommendations
+
+1. **Start with Method A (LLM-Based)** for most applications - provides good balance of accuracy and flexibility
+2. **Use Method C (Sequential)** for simple systems or prototypes
+3. **Consider Method E (Hybrid)** for production systems requiring high reliability
+4. **Avoid Method D (Rule-Based)** unless you have very simple, well-defined queries
+
+## Future Enhancements
+
+1. **Learning-based routing**: Train models on user feedback to improve agent selection
+2. **Dynamic agent creation**: Automatically create new agents based on query patterns
+3. **Multi-agent collaboration**: Allow agents to work together on complex queries
+4. **Context-aware routing**: Consider conversation history and user preferences
+5. **Performance optimization**: Cache agent evaluations and use async processing
+

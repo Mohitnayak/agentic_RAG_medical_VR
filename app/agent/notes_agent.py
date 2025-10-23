@@ -36,7 +36,8 @@ Respond with a JSON object matching the schema provided."""
 
     def _validate_response(self, response: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and enhance the response."""
-        validated = super()._validate_response(response)
+        # Don't call super() validation to avoid modifying our custom response
+        validated = response.copy()
         
         # Ensure required fields for Notes Agent
         if 'function' not in validated:
@@ -45,19 +46,31 @@ Respond with a JSON object matching the schema provided."""
         if 'note_text' not in validated:
             validated['note_text'] = None
         
+        # Ensure base fields are present
+        if 'agent' not in validated:
+            validated['agent'] = self.agent_name
+        if 'confidence' not in validated:
+            validated['confidence'] = 0.8
+        if 'context_used' not in validated:
+            validated['context_used'] = False
+        if 'intent' not in validated:
+            validated['intent'] = 'general'
+        
         return validated
 
     def get_agent_description(self) -> str:
         return "Notes Agent - Manages note-taking, recording, and documentation"
 
-    def process(self, query: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
+    def process(self, query: str, conversation_history: List[Dict] = None, session_id: str = None) -> Dict[str, Any]:
         """Process a user query with special handling for notes functionality."""
         try:
             query_lower = query.lower().strip()
+            print(f"Notes Agent processing: '{query}' -> '{query_lower}'")  # Debug log
             
             # Handle start notes requests
             start_phrases = ['start taking notes', 'start notes', 'begin notes', 'start recording', 'take notes']
             if any(phrase in query_lower for phrase in start_phrases):
+                print(f"Notes Agent: Matched start phrase")  # Debug log
                 return {
                     "type": "note_action",
                     "agent": "Notes Agent",
@@ -86,19 +99,59 @@ Respond with a JSON object matching the schema provided."""
                 }
             
             # Handle note retrieval requests
-            retrieve_phrases = ['show me my notes', 'give me my notes', 'show notes', 'my notes', 'notes i took', 'last notes']
+            retrieve_phrases = ['show me my notes', 'give me my notes', 'show notes', 'my notes', 'notes i took', 'last notes', 'display notes', 'view notes']
             if any(phrase in query_lower for phrase in retrieve_phrases):
-                return {
-                    "type": "note_action",
-                    "agent": "Notes Agent",
-                    "intent": "retrieve_notes",
-                    "function": "retrieve_notes",
-                    "message": "Here are your saved notes:",
-                    "state": "off",
-                    "note_text": None,
-                    "confidence": 0.9,
-                    "context_used": False
-                }
+                # Get notes from database for current session
+                try:
+                    from app.models import Note, db
+                    # Use the session_id passed from router
+                    current_session_id = session_id or 'default'
+                    print(f"Notes Agent retrieving notes for session: {current_session_id}")  # Debug log
+                    
+                    notes = Note.query.filter_by(session_id=current_session_id, finalized=True).order_by(Note.created_at.desc()).all()
+                    
+                    if notes:
+                        notes_list = []
+                        for i, note in enumerate(notes, 1):
+                            notes_list.append(f"{i}. {note.text}")
+                        
+                        notes_text = "\n".join(notes_list)
+                        return {
+                            "type": "note_action",
+                            "agent": "Notes Agent",
+                            "intent": "retrieve_notes",
+                            "function": "retrieve_notes",
+                            "message": f"Here are your saved notes:\n\n{notes_text}",
+                            "state": "off",
+                            "note_text": notes_text,
+                            "confidence": 0.9,
+                            "context_used": False
+                        }
+                    else:
+                        return {
+                            "type": "note_action",
+                            "agent": "Notes Agent",
+                            "intent": "retrieve_notes",
+                            "function": "retrieve_notes",
+                            "message": "No saved notes found for this session.",
+                            "state": "off",
+                            "note_text": None,
+                            "confidence": 0.9,
+                            "context_used": False
+                        }
+                except Exception as e:
+                    print(f"Error retrieving notes: {e}")
+                    return {
+                        "type": "note_action",
+                        "agent": "Notes Agent",
+                        "intent": "retrieve_notes",
+                        "function": "retrieve_notes",
+                        "message": "Error retrieving notes from database.",
+                        "state": "off",
+                        "note_text": None,
+                        "confidence": 0.5,
+                        "context_used": False
+                    }
             
             # Handle add note requests (when user provides content)
             add_phrases = ['note this:', 'add note:', 'record:', 'note:']

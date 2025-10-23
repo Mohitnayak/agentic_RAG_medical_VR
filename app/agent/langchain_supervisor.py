@@ -24,7 +24,7 @@ Available agents:
    - Examples: "What are sinuses?", "Where is the skull?", "Explain implants", "Tell me about dental procedures"
    
 2. Notes Agent: Recording, documenting, note-taking, memory functions
-   - Examples: "Take notes", "Record this", "Start recording", "Note this: patient prefers 4x11.5", "Stop recording"
+   - Examples: "Take notes", "Record this", "Start recording", "Start taking notes", "Note this: patient prefers 4x11.5", "Stop recording"
    
 3. Value Agent: Adjusting image properties like brightness, contrast, opacity
    - Examples: "Set brightness to 50", "Adjust contrast to 75%", "Change opacity to 80"
@@ -40,6 +40,7 @@ Context Rules:
 - If user provides dimensions like "20, 30" after implant discussion, route to Control Agent
 - Only route to Value Agent for explicit brightness/contrast/opacity requests
 - For social responses like "thank you", "thanks", "ok", "okay", "got it", route to Info Agent for conversational response
+- For notes phrases like "start taking notes", "take notes", "stop notes", route to Notes Agent
 
 Analyze the user's question and respond with ONLY the agent name: "info", "notes", "value", or "control"
 
@@ -48,6 +49,16 @@ Be precise and consider the primary intent of the user's request."""
     def select_agent(self, query: str, conversation_history: List[Dict] = None) -> str:
         """Select the best agent for handling the user query."""
         try:
+            print(f"Supervisor selecting agent for: '{query}'")  # Debug log
+            
+            query_lower = query.lower().strip()
+            
+            # Simple rule-based fallback for notes
+            notes_phrases = ['start taking notes', 'start notes', 'take notes', 'stop notes', 'end notes', 'show me my notes', 'my notes']
+            if any(phrase in query_lower for phrase in notes_phrases):
+                print(f"Supervisor rule-based selection: notes")  # Debug log
+                return "notes"
+            
             # Build context from conversation history
             context = ""
             if conversation_history and len(conversation_history) > 0:
@@ -66,6 +77,7 @@ Be precise and consider the primary intent of the user's request."""
             
             # Get LLM response
             response = self.llm_client.chat(messages).strip().lower()
+            print(f"Supervisor LLM response: '{response}'")  # Debug log
             
             # Validate and return agent name
             valid_agents = ["info", "notes", "value", "control"]
@@ -73,9 +85,11 @@ Be precise and consider the primary intent of the user's request."""
             # Extract agent name from response
             for agent in valid_agents:
                 if agent in response:
+                    print(f"Supervisor selected: {agent}")  # Debug log
                     return agent
             
             # Fallback to info agent if no clear match
+            print(f"Supervisor fallback to: info")  # Debug log
             return "info"
             
         except Exception as e:

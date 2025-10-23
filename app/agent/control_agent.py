@@ -92,7 +92,7 @@ Respond with a JSON object matching the schema provided."""
         
         return validated
 
-    def process(self, query: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
+    def process(self, query: str, conversation_history: List[Dict] = None, session_id: str = None) -> Dict[str, Any]:
         """Process a user query with special handling for implant selection."""
         try:
             query_lower = query.lower()

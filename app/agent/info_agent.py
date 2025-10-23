@@ -72,7 +72,7 @@ Respond with a JSON object matching the schema provided."""
     def get_agent_description(self) -> str:
         return "Info Agent - Provides dental information, anatomy explanations, and definitions"
 
-    def process(self, query: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
+    def process(self, query: str, conversation_history: List[Dict] = None, session_id: str = None) -> Dict[str, Any]:
         """Process a user query with special handling for conversational responses."""
         try:
             query_lower = query.lower().strip()

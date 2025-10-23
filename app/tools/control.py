@@ -27,7 +27,7 @@ def _get_entities() -> Dict[str, Any]:
         
         if entity_type == "switch":
             switch_targets.add(name)
-        elif entity_type == "control":
+        elif entity_type in {"control", "value"}:
             value_targets.add(name)
     
     return {

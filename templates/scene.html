@@ -556,8 +556,30 @@
                 this.notesArea.style.display = 'none';
                 this.messageInput.style.display = 'block';
                 
+                // End notes session on server
+                this.endNotesSession();
+                
                 // Send stop notes command
                 this.sendMessage('stop taking notes');
+            }
+
+            async startNotesSession() {
+                try {
+                    const response = await fetch('/api/v1/notes/start', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.currentSession
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Notes session started:', data);
+                } catch (error) {
+                    console.error('Error starting notes session:', error);
+                }
             }
 
             async sendNoteToServer(noteText) {
@@ -580,11 +602,33 @@
                 }
             }
 
+            async endNotesSession() {
+                try {
+                    const response = await fetch('/api/v1/notes/end', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.currentSession
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Notes session ended:', data);
+                } catch (error) {
+                    console.error('Error ending notes session:', error);
+                }
+            }
+
             showNotesArea() {
                 this.notesActive = true;
                 this.notesArea.style.display = 'block';
                 this.messageInput.style.display = 'none';
                 this.notesInput.focus();
+                
+                // Start notes session on server
+                this.startNotesSession();
             }
 
             hideNotesArea() {

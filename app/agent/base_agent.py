@@ -102,7 +102,7 @@ class BaseAgent(ABC):
         
         return response
     
-    def process(self, query: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
+    def process(self, query: str, conversation_history: List[Dict] = None, session_id: str = None) -> Dict[str, Any]:
         """Process a user query and return structured response."""
         try:
             # Build context

@@ -64,6 +64,8 @@ class NoteAction(BaseModel):
     type: str = Field(default="note_action", description="Response type")
     function: str = Field(description="Note function: start_notes, add_note, end_notes")
     text: Optional[str] = Field(default=None, description="Note text for add_note")
+    message: Optional[str] = Field(default=None, description="Response message")
+    state: Optional[str] = Field(default=None, description="Notes state: on/off")
 
 
 class ChatResponse(BaseModel):

@@ -12,3 +12,9 @@ sentence-transformers==3.0.1
 rapidfuzz==3.10.0
 numpy==1.26.4
 
+# LangChain dependencies for agentic system
+langchain==0.1.0
+langchain-community==0.0.13
+langchain-core==0.1.10
+
+ursina==8.2.0

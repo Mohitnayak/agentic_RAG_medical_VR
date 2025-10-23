@@ -16,7 +16,7 @@
   "classifier": {
     "enabled": true,
     "model": "all-MiniLM-L6-v2",
-    "labels": ["control_on", "control_off", "control_value", "info_definition", "info_location", "size_request", "none"],
+    "labels": ["control_on", "control_off", "control_value", "info_definition", "info_location", "size_request", "notes_start", "notes_add", "notes_end", "none"],
     "label_prompts": {
       "control_on": "User wants to turn on, activate, enable, show, or start something like handles, xray flashlight, nerve, sinus, or align implants",
       "control_off": "User wants to turn off, deactivate, disable, hide, or stop something like handles, xray flashlight, nerve, sinus, or align implants", 
@@ -24,8 +24,18 @@
       "info_definition": "User asks what something is, definition of something, or wants information about scene elements",
       "info_location": "User asks where something is located or which side something is on",
       "size_request": "User asks for implants but doesn't specify size dimensions",
+      "notes_start": "User wants to start recording or begin taking notes",
+      "notes_add": "User wants to add content to notes, like 'note this:'",
+      "notes_end": "User wants to stop or finalize note taking",
       "none": "No clear intent or ambiguous request"
     }
+  },
+  "normalization": {
+    "prompt": "You normalize user input for VR controls, information queries, and notes. Return compact JSON with key canonical_text."
+  },
+  "guardrails": {
+    "min_context_chars": 64,
+    "min_chunks": 1
   },
   "clarifications": {
     "llm_enabled": true
