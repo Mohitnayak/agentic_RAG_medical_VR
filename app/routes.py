@@ -3,7 +3,8 @@ from __future__ import annotations
 import uuid
 from typing import Any, Dict
 
-from flask import Blueprint, request
+from flask import Blueprint, request, Response
+from time import sleep
 
 from .schemas import ChatRequest, IngestRequest, NotesAddRequest, NotesEndRequest, NotesStartRequest, validate_response, validate_control_arguments
 from .scene.router import decision_router
@@ -16,6 +17,7 @@ from .tools.registry import ToolRegistry
 from .tools.activate import tool_spec as activate_tool_spec
 from .tools.control import tool_spec as control_tool_spec
 from .agent.planner import Agent
+from .agent.info_agent import info_agent
 
 
 api_bp = Blueprint("api", __name__)
@@ -24,6 +26,39 @@ api_bp = Blueprint("api", __name__)
 @api_bp.get("/v1/ping")
 def api_ping():
     return {"status": "ok", "service": "agentic-rag", "version": 1}, 200
+
+
+# Simple in-memory log buffer for demo SSE streaming
+_log_messages: list[str] = []
+
+
+def _sse_format(data: str) -> str:
+    return f"data: {data}\n\n"
+
+
+@api_bp.post("/v1/scene/log")
+def scene_log_add():
+    payload = request.get_json(force=True) or {}
+    msg = str(payload.get("message") or "")
+    if not msg:
+        return {"ok": False, "error": "empty message"}, 400
+    _log_messages.append(msg)
+    # Truncate to last 200
+    if len(_log_messages) > 200:
+        del _log_messages[:-200]
+    return {"ok": True}, 200
+
+
+@api_bp.get("/v1/scene/logs")
+def scene_logs_stream():
+    def event_stream():
+        idx = 0
+        while True:
+            while idx < len(_log_messages):
+                yield _sse_format(_log_messages[idx])
+                idx += 1
+            sleep(0.5)
+    return Response(event_stream(), mimetype="text/event-stream")
 
 
 # Initialize singletons lazily
@@ -46,6 +81,8 @@ def _ensure_services() -> None:
         _vector_store = FAISSVectorStore(dim=768)
     if _retriever is None:
         _retriever = Retriever(_vector_store, embedding_dim=768)
+        # Inject retriever into InfoAgent for domain-gated answers
+        info_agent.set_retriever(_retriever)
     if _agent is None:
         _agent = Agent(_tools)
 
@@ -81,9 +118,17 @@ def ingest():
 def chat():
     _ensure_services()
     req = ChatRequest(**request.get_json(force=True))
+    
+    # Extract conversation history from request (agent selection is now automatic)
+    conversation_history = request.get_json(force=True).get('conversation_history', [])
 
-    # Use new decision router for intelligent routing
-    router_response = decision_router.route(req.message)
+    # Use new decision router for intelligent routing with conversation context
+    router_response = decision_router.route(
+        req.message, 
+        session_id=req.sessionId,
+        conversation_history=conversation_history,
+        selected_agent='all'  # Always use automatic agent selection
+    )
     
     # Validate response using Pydantic schemas
     validated_response = validate_response(router_response)
@@ -101,6 +146,61 @@ def chat():
         from .models import Note
         notes_active = db.session.query(Note.id).filter_by(session_id=req.sessionId, finalized=False).first() is not None
         out = _agent.respond(req.message, context, notes_active, has_context)
+        # Normalize tool_result into user-friendly reply
+        if isinstance(out, dict) and out.get("type") == "tool_result":
+            result = out.get("result", {}) or {}
+            ok = bool(result.get("ok"))
+            if ok:
+                applied = result.get("applied", {}) or {}
+                target = str(applied.get("target") or "target").replace("_", " ")
+                operation = applied.get("operation")
+                value = applied.get("value")
+                narration = None
+                try:
+                    client = OllamaClient()
+                    action_desc = f"operation='{operation}', target='{target}', value='{value}'"
+                    prompt = (
+                        "You are a concise assistant in a VR dental planning app.\n"
+                        "Given the action that was performed, produce ONE short confirmation line to the user.\n"
+                        "Be clear and natural; do not add extra explanations.\n\n"
+                        f"User message: {req.message}\n"
+                        f"Action: {action_desc}\n\n"
+                        "Reply with one sentence only."
+                    )
+                    narration = client.chat(prompt).strip()
+                except Exception:
+                    narration = None
+
+                if not narration:
+                    if operation == "set" and isinstance(value, str) and value in {"on", "off"}:
+                        narration = f"The {target} is now {value}."
+                    elif operation == "set" and isinstance(value, (int, float)):
+                        narration = f"Setting {target} to {value}."
+                    elif operation == "toggle":
+                        narration = f"Toggling {target}."
+                    else:
+                        if isinstance(value, str) and value in {"on", "off"}:
+                            narration = f"Turned {value} {target}."
+                        elif isinstance(value, (int, float)):
+                            narration = f"Setting {target} to {value}."
+                        else:
+                            narration = f"Applied {operation or 'action'} to {target}."
+
+                return {"type": "answer", "answer": narration, "context_used": False}, 200
+            else:
+                err = str(result.get("error") or "I couldn't apply that request.")
+                clarifications = []
+                if "value must be a number" in err:
+                    clarifications = ["Provide a number, e.g., 'set brightness to 50'"]
+                elif "unknown target" in err:
+                    clarifications = ["Specify a control like brightness or contrast"]
+                elif "left hand cannot control" in err:
+                    clarifications = ["Use right hand controls for this element"]
+                return {
+                    "type": "clarification",
+                    "message": err,
+                    "clarifications": clarifications or ["Could you clarify the exact element and value?"],
+                }, 200
         return out, 200
     
     # If router asks for clarification, try answering via RAG automatically using available context
@@ -124,6 +224,61 @@ def chat():
                 "clarifications": validated_response.get("clarifications", []),
                 "confidence": validated_response.get("confidence", {})
             }, 200
+        # Normalize tool_result into user-friendly reply
+        if isinstance(out, dict) and out.get("type") == "tool_result":
+            result = out.get("result", {}) or {}
+            ok = bool(result.get("ok"))
+            if ok:
+                applied = result.get("applied", {}) or {}
+                target = str(applied.get("target") or "target").replace("_", " ")
+                operation = applied.get("operation")
+                value = applied.get("value")
+                narration = None
+                try:
+                    client = OllamaClient()
+                    action_desc = f"operation='{operation}', target='{target}', value='{value}'"
+                    prompt = (
+                        "You are a concise assistant in a VR dental planning app.\n"
+                        "Given the action that was performed, produce ONE short confirmation line to the user.\n"
+                        "Be clear and natural; do not add extra explanations.\n\n"
+                        f"User message: {req.message}\n"
+                        f"Action: {action_desc}\n\n"
+                        "Reply with one sentence only."
+                    )
+                    narration = client.chat(prompt).strip()
+                except Exception:
+                    narration = None
+
+                if not narration:
+                    if operation == "set" and isinstance(value, str) and value in {"on", "off"}:
+                        narration = f"The {target} is now {value}."
+                    elif operation == "set" and isinstance(value, (int, float)):
+                        narration = f"Setting {target} to {value}."
+                    elif operation == "toggle":
+                        narration = f"Toggling {target}."
+                    else:
+                        if isinstance(value, str) and value in {"on", "off"}:
+                            narration = f"Turned {value} {target}."
+                        elif isinstance(value, (int, float)):
+                            narration = f"Setting {target} to {value}."
+                        else:
+                            narration = f"Applied {operation or 'action'} to {target}."
+
+                return {"type": "answer", "answer": narration, "context_used": False}, 200
+            else:
+                err = str(result.get("error") or "I couldn't apply that request.")
+                clarifications = []
+                if "value must be a number" in err:
+                    clarifications = ["Provide a number, e.g., 'set brightness to 50'"]
+                elif "unknown target" in err:
+                    clarifications = ["Specify a control like brightness or contrast"]
+                elif "left hand cannot control" in err:
+                    clarifications = ["Use right hand controls for this element"]
+                return {
+                    "type": "clarification",
+                    "message": err,
+                    "clarifications": clarifications or ["Could you clarify the exact element and value?"],
+                }, 200
         return out, 200
 
     # For tool actions, perform a dry validation of arguments; on failure, use RAG + LLM to reply naturally
@@ -156,7 +311,7 @@ def chat():
                 }, 200
             return out, 200
     
-    # Add natural-language narration for successful tool actions
+    # Add natural-language narration and function/state for successful tool actions
     if validated_response.get("type") == "tool_action":
         args = (validated_response.get("arguments") or {}).copy()
         target = str(args.get("target") or "target").replace("_", " ")
@@ -184,7 +339,7 @@ def chat():
         if not narration:
             # Template fallback
             if operation == "set" and isinstance(value, str) and value in {"on", "off"}:
-                narration = f"The {target} is now {value}."
+                narration = f"Turned {value} {target}."
             elif operation == "set" and isinstance(value, (int, float)):
                 narration = f"Setting {target} to {value}."
             elif operation == "toggle":
@@ -192,41 +347,72 @@ def chat():
 
         if narration:
             enriched = dict(validated_response)
-            enriched["narration"] = narration
+            # Add function/state fields per action UX contract
+            if operation == "set" and isinstance(value, str) and value in {"on", "off"}:
+                enriched["function"] = f"switch {target}"
+                enriched["state"] = value
+            elif operation == "set" and isinstance(value, (int, float)):
+                enriched["function"] = f"set {target}"
+                enriched["state"] = value
+            elif operation == "toggle":
+                enriched["function"] = f"toggle {target}"
+                enriched["state"] = "toggle"
+            enriched["answer"] = narration
             return enriched, 200
 
-    return validated_response, 200
+    # Standardize the response format for the chatbot
+    # Always use "message" field for consistency
+    response_text = (
+        validated_response.get("answer")
+        or validated_response.get("message")
+        or validated_response.get("response")
+    )
+    if not response_text:
+        if validated_response.get('type') in ['control_on', 'control_off', 'control_toggle', 'control_value', 'implant_select', 'undo_action', 'redo_action']:
+            response_text = f"Executed {validated_response.get('type', 'action')}"
+        else:
+            response_text = "No response generated"
+    
+    standardized_response = {
+        "agent": validated_response.get("agent", "Dental AI"),
+        "intent": validated_response.get("intent", "General Response"),
+        "message": response_text,  # Always use "message" field
+        "confidence": validated_response.get("confidence", {}),
+        "json_output": validated_response,
+        "session_id": req.sessionId,
+        "timestamp": __import__('datetime').datetime.now().isoformat()
+    }
+    
+    return standardized_response, 200
 
 
-from .notes.manager import NotesManager
-
-_notes = NotesManager()
+from .notes.service import notes_service
 
 
 @api_bp.post("/v1/notes/start")
 def notes_start():
     body = NotesStartRequest(**request.get_json(force=True))
-    _notes.start(body.sessionId)
+    notes_service.start(body.sessionId)
     return {"ok": True}, 200
 
 
 @api_bp.post("/v1/notes/add")
 def notes_add():
     body = NotesAddRequest(**request.get_json(force=True))
-    note = _notes.add(body.sessionId, body.text)
+    note = notes_service.add(body.sessionId, body.text)
     return {"ok": True, "noteId": note.id}, 200
 
 
 @api_bp.post("/v1/notes/end")
 def notes_end():
     body = NotesEndRequest(**request.get_json(force=True))
-    notes = _notes.end(body.sessionId)
+    notes = notes_service.end(body.sessionId)
     return {"ok": True, "finalized": [n.id for n in notes]}, 200
 
 
 @api_bp.get("/v1/notes/<session_id>")
 def notes_list(session_id: str):
-    items = _notes.list(session_id)
+    items = notes_service.list(session_id)
     return {"ok": True, "notes": [{"id": n.id, "text": n.text, "finalized": n.finalized, "createdAt": n.created_at.isoformat()} for n in items]}, 200
 
 

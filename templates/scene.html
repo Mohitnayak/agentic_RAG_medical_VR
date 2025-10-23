@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Dental AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f7;
+            color: #111827;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chatbot-container {
+            width: 100%;
+            max-width: 860px;
+            height: 94vh;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #ffffff;
+            color: #111827;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .chat-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 12px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.2s ease-in;
+            border: 1px solid #e5e7eb;
+        }
+
+        .user-message {
+            background: #e5e7eb;
+            color: #111827;
+            align-self: flex-end;
+            margin-left: auto;
+            border-color: #d1d5db;
+        }
+
+        .agent-message {
+            background: #ffffff;
+            color: #111827;
+            align-self: flex-start;
+        }
+
+        .agent-info {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .agent-response {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        details.json-output {
+            background: #f3f4f6;
+            color: #111827;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 10px;
+            border: 1px solid #e5e7eb;
+        }
+        details.json-output > summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 600;
+        }
+        details.json-output > summary::-webkit-details-marker { display: none; }
+        details.json-output pre {
+            margin-top: 8px;
+            white-space: pre-wrap;
+        }
+
+        .chat-input-container {
+            padding: 16px;
+            background: #fafafa;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .session-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #ffffff;
+            color: #111827;
+        }
+
+        .session-input:focus {
+            border-color: #9ca3af;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+            min-height: 56px;
+            background: #ffffff;
+            color: #111827;
+        }
+
+        .message-input:focus {
+            border-color: #9ca3af;
+        }
+
+        .send-button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: #111827;
+            color: #ffffff;
+            border: 1px solid #111827;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        }
+
+        .send-button:hover {
+            background: #0b1220;
+            border-color: #0b1220;
+        }
+
+        .send-button:active {
+            background: #161b22;
+            border-color: #161b22;
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 12px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            align-self: flex-start;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .typing-indicator.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .conversation-summary {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #374151;
+        }
+
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chatbot-container {
+                width: 95%;
+                height: 96vh;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="chat-header">
+            Dental AI Assistant
+        </div>
+        
+        <div class="chat-content" id="chat-content">
+            <div class="conversation-summary">
+                <strong>Welcome!</strong> I'm your intelligent dental AI assistant. I automatically choose the right specialist agent based on your question. Just ask about dental planning, procedures, anatomy, implants, or any dental-related topics.
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typing-indicator">
+            AI is thinking...
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="input-group">
+                <input type="text" id="session" class="session-input" placeholder="Session ID (optional)" value="">
+            </div>
+            <textarea id="message" class="message-input" placeholder="Ask about dental planning, procedures, anatomy, or any dental-related questions..." rows="2"></textarea>
+            <button id="send" class="send-button">Send Message</button>
+        </div>
+    </div>
+
+    <script>
+        // Intelligent Dental AI Chatbot
+        class DentalChatbot {
+            constructor() {
+                this.chatContent = document.getElementById('chat-content');
+                this.messageInput = document.getElementById('message');
+                this.sendButton = document.getElementById('send');
+                this.sessionInput = document.getElementById('session');
+                this.typingIndicator = document.getElementById('typing-indicator');
+                
+                this.conversationHistory = [];
+                this.currentSession = this.generateSessionId();
+                
+                this.initializeEventListeners();
+                this.updateSessionDisplay();
+            }
+
+            generateSessionId() {
+                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            initializeEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Session input
+                this.sessionInput.addEventListener('change', () => {
+                    this.currentSession = this.sessionInput.value || this.generateSessionId();
+                    this.updateSessionDisplay();
+                });
+            }
+
+            updateSessionDisplay() {
+                this.sessionInput.value = this.currentSession;
+            }
+
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                console.log('User typed:', message); // Debug log
+                if (!message) return;
+
+                // Add user message to chat
+                this.addMessage(message, 'user');
+                
+                // Clear input and disable send button
+                this.messageInput.value = '';
+                this.sendButton.disabled = true;
+                this.showTypingIndicator();
+
+                try {
+                    const requestData = {
+                        message: message,
+                        sessionId: this.currentSession,
+                        conversation_history: this.conversationHistory
+                    };
+                    console.log('Sending request:', requestData); // Debug log
+                    
+                    const response = await fetch('/api/v1/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+                    const data = await response.json();
+                    console.log('API Response:', data); // Debug log
+                    
+                    // Add agent response to chat
+                    this.addAgentResponse(data);
+                    
+                    // Update conversation history
+                    this.conversationHistory.push({
+                        user: message,
+                        agent: data.agent || 'unknown',
+                        response: data.message || data.response,
+                        timestamp: new Date().toISOString()
+                    });
+
+                } catch (error) {
+                    console.error('Chatbot Error:', error);
+                    this.addMessage('I apologize, but I encountered an issue processing your request. Please try rephrasing your question or try again in a moment.', 'agent', 'System Error');
+                } finally {
+                    this.hideTypingIndicator();
+                    this.sendButton.disabled = false;
+                    this.messageInput.focus();
+                }
+            }
+
+            addMessage(content, type, agentName = null) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}-message`;
+                
+                if (type === 'agent' && agentName) {
+                    messageDiv.innerHTML = `
+                        <div class="agent-info">${agentName}</div>
+                        <div class="agent-response">${content}</div>
+                    `;
+                } else {
+                    messageDiv.textContent = content;
+                }
+                
+                this.chatContent.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addAgentResponse(data) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message agent-message';
+                
+                // Always prefer "message" field for consistency
+                const fallbackJson = (data && data.json_output) || {};
+                let displayText = (
+                    data.message ?? data.answer ?? data.response ?? data.text ?? fallbackJson.message ?? fallbackJson.answer ?? ''
+                );
+                // If server provided a placeholder or empty, but we have nested message/answer, prefer it
+                const isPlaceholder = typeof displayText === 'string' && displayText.trim().toLowerCase() === 'no response generated';
+                if (isPlaceholder || !displayText) {
+                    if (fallbackJson && typeof fallbackJson.message === 'string' && fallbackJson.message.trim().length > 0) {
+                        displayText = fallbackJson.message;
+                    } else if (fallbackJson && typeof fallbackJson.answer === 'string' && fallbackJson.answer.trim().length > 0) {
+                        displayText = fallbackJson.answer;
+                    } else {
+                        displayText = 'No response generated';
+                    }
+                }
+
+                let content = `
+                    <div class="agent-info">${data.agent || 'Dental AI'} - ${data.intent || 'General Response'}</div>
+                    <div class="agent-response">${displayText}</div>
+                `;
+
+                // Add JSON output if available
+                if (data.json_output) {
+                    content += `<details class="json-output"><summary>Details</summary><pre>${JSON.stringify(data.json_output, null, 2)}</pre></details>`;
+                }
+
+                // Add confidence score if available
+                if (data.confidence !== undefined) {
+                    const conf = typeof data.confidence === 'number' ? data.confidence : (fallbackJson.confidence ?? null);
+                    if (typeof conf === 'number') {
+                        content += `<div style="margin-top: 8px; font-size: 12px; color: #666;">Confidence: ${(conf * 100).toFixed(1)}%</div>`;
+                    }
+                }
+
+                messageDiv.innerHTML = content;
+                this.chatContent.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTypingIndicator() {
+                this.typingIndicator.classList.add('show');
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                this.typingIndicator.classList.remove('show');
+            }
+
+            scrollToBottom() {
+                this.chatContent.scrollTop = this.chatContent.scrollHeight;
+            }
+        }
+
+        // Initialize chatbot when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new DentalChatbot();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "type": "control_on|control_off|control_toggle|implant_select|undo_action|redo_action",
+  "agent": "Control Agent",
+  "intent": "string",
+  "target": "string",
+  "value": "string|array|null",
+  "message": "string",
+  "confidence": "float",
+  "context_used": "boolean"
+}
+

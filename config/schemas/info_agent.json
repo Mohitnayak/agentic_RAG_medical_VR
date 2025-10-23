@@ -1,0 +1,10 @@
+{
+  "type": "answer",
+  "agent": "Info Agent",
+  "intent": "string",
+  "message": "string",
+  "confidence": "float",
+  "context_used": "boolean",
+  "sources": ["string"]
+}
+

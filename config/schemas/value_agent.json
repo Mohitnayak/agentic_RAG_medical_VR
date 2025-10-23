@@ -1,0 +1,11 @@
+{
+  "type": "control_value",
+  "agent": "Value Agent",
+  "intent": "string",
+  "target": "brightness|contrast|opacity",
+  "value": "int (0-100)",
+  "message": "string",
+  "confidence": "float",
+  "context_used": "boolean"
+}
+

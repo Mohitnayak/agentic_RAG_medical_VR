@@ -1,0 +1,11 @@
+{
+  "type": "note_action",
+  "agent": "Notes Agent",
+  "intent": "string",
+  "function": "start_notes|add_note|end_notes",
+  "message": "string",
+  "note_text": "string|null",
+  "confidence": "float",
+  "context_used": "boolean"
+}
+

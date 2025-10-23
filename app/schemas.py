@@ -46,7 +46,7 @@ class ToolAction(BaseModel):
 class AnswerResponse(BaseModel):
     """Schema for answer responses."""
     type: str = Field(default="answer", description="Response type")
-    answer: str = Field(description="Answer text")
+    message: str = Field(description="Answer text")
     context_used: bool = Field(description="Whether RAG context was used")
     confidence: Optional[float] = Field(default=None, description="Confidence score")
 
@@ -59,21 +59,39 @@ class ClarificationResponse(BaseModel):
     confidence: Optional[Dict[str, float]] = Field(default=None, description="Confidence scores")
 
 
+class NoteAction(BaseModel):
+    """Schema for note action responses."""
+    type: str = Field(default="note_action", description="Response type")
+    function: str = Field(description="Note function: start_notes, add_note, end_notes")
+    text: Optional[str] = Field(default=None, description="Note text for add_note")
+
+
 class ChatResponse(BaseModel):
     """Schema for chat API responses."""
     type: str = Field(description="Response type: tool_action, answer, or clarification")
+    agent: Optional[str] = Field(default=None, description="Agent name")
+    intent: Optional[str] = Field(default=None, description="Intent label")
     tool: Optional[str] = Field(default=None, description="Tool name (for tool_action)")
     arguments: Optional[Dict[str, Any]] = Field(default=None, description="Tool arguments (for tool_action)")
     answer: Optional[str] = Field(default=None, description="Answer text (for answer)")
+    message: Optional[str] = Field(default=None, description="Response message")
+    target: Optional[str] = Field(default=None, description="Target element (for control actions)")
+    value: Optional[Union[str, int, float, List]] = Field(default=None, description="Value (for control actions)")
+    function: Optional[str] = Field(default=None, description="Function name (for note actions)")
+    note_text: Optional[str] = Field(default=None, description="Note text (for note actions)")
     context_used: Optional[bool] = Field(default=None, description="Whether RAG context was used (for answer)")
-    message: Optional[str] = Field(default=None, description="Clarification message (for clarification)")
     clarifications: Optional[List[str]] = Field(default=None, description="Clarification questions (for clarification)")
     confidence: Optional[Union[float, Dict[str, float]]] = Field(default=None, description="Confidence scores")
     
     @validator('type')
     def validate_type(cls, v):
-        if v not in ['tool_action', 'answer', 'clarification']:
-            raise ValueError('type must be tool_action, answer, or clarification')
+        valid_types = [
+            'tool_action', 'answer', 'clarification', 'note_action',
+            'control_on', 'control_off', 'control_toggle', 'control_value',
+            'implant_select', 'undo_action', 'redo_action'
+        ]
+        if v not in valid_types:
+            raise ValueError(f'type must be one of: {", ".join(valid_types)}')
         return v
     
     @validator('tool')
@@ -82,16 +100,10 @@ class ChatResponse(BaseModel):
             raise ValueError('tool is required for tool_action type')
         return v
     
-    @validator('answer')
-    def validate_answer(cls, v, values):
-        if values.get('type') == 'answer' and not v:
-            raise ValueError('answer is required for answer type')
-        return v
-    
     @validator('message')
     def validate_message(cls, v, values):
-        if values.get('type') == 'clarification' and not v:
-            raise ValueError('message is required for clarification type')
+        if values.get('type') in ['answer', 'clarification'] and not v:
+            raise ValueError('message is required for answer and clarification types')
         return v
 
 
@@ -121,12 +133,19 @@ def validate_response(response: Dict[str, Any]) -> Dict[str, Any]:
     Returns validated response or error details.
     """
     try:
-        if response.get('type') == 'tool_action':
+        response_type = response.get('type')
+        
+        if response_type == 'tool_action':
             validated = ToolAction(**response)
-        elif response.get('type') == 'answer':
+        elif response_type == 'answer':
             validated = AnswerResponse(**response)
-        elif response.get('type') == 'clarification':
+        elif response_type == 'clarification':
             validated = ClarificationResponse(**response)
+        elif response_type == 'note_action':
+            validated = NoteAction(**response)
+        elif response_type in ['control_on', 'control_off', 'control_toggle', 'control_value', 'implant_select', 'undo_action', 'redo_action']:
+            # For LangChain agent responses, use ChatResponse schema
+            validated = ChatResponse(**response)
         else:
             return {"error": "Invalid response type", "original": response}
         
