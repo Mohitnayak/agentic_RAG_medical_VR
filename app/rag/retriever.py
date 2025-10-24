@@ -7,11 +7,10 @@ from flask import current_app
 from ..llm.ollama_client import OllamaClient
 from ..models import Chunk, db
 from ..config_loader import load_config
-from .vector_store import VectorStore
 
 
 class Retriever:
-    def __init__(self, vector_store: VectorStore, embedding_dim: int = 768) -> None:
+    def __init__(self, vector_store: Any, embedding_dim: int = 768) -> None:
         self.vector_store = vector_store
         self.embedding_dim = embedding_dim
         self.client = OllamaClient()

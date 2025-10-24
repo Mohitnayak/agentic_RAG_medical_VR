@@ -11,7 +11,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
 from app.llm.ollama_client import OllamaClient
-from app.scene.context_loader import scene_context_loader
 
 
 class BaseAgent(ABC):
@@ -43,23 +42,16 @@ class BaseAgent(ABC):
         """Get the system prompt for this agent."""
         pass
     
-    def _get_context_from_scene_reference(self, query: str) -> str:
-        """Get relevant context from scene_reference.md."""
-        return scene_context_loader.search_context(query)
-    
     def _get_context_from_rag(self, query: str) -> str:
-        """Get context from RAG system (placeholder for now)."""
-        # TODO: Integrate with existing RAG system
+        """Get context from RAG system."""
+        # This will be overridden by agents that have retrievers
         return ""
     
     def _build_context(self, query: str, conversation_history: List[Dict] = None) -> str:
         """Build comprehensive context for the agent."""
         context_parts = []
         
-        # Add scene reference context
-        scene_context = self._get_context_from_scene_reference(query)
-        if scene_context:
-            context_parts.append(f"VR Scene Context:\n{scene_context}")
+        # Scene reference context removed (scene_context_loader not available)
         
         # Add RAG context
         rag_context = self._get_context_from_rag(query)

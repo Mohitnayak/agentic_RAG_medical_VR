@@ -37,11 +37,18 @@ Available targets:
 - xray_flashlight: X-ray flashlight tool
 - align_implants: Implant alignment tool
 - implant_[size]: Specific implant selection (e.g., "implant_4x11.5")
+- implant_removed: When removing implants
+
+State tracking:
+- "present": Implant is active/visible in the scene
+- "absent": Implant is removed/hidden from the scene
+- "selected": Implant is selected but not yet placed (for future use)
 
 Guidelines:
 - Determine action type from user intent (on/off/toggle/select/undo/redo)
 - Extract target from user input
 - For implants, extract size and format as "implant_[height]x[length]"
+- Include "state" field: "present" for adding implants, "absent" for removing implants
 - Use flexible value field: single values for toggles, arrays for implant sizes
 - Provide clear confirmation messages
 
@@ -90,12 +97,30 @@ Respond with a JSON object matching the schema provided."""
         if 'value' not in validated:
             validated['value'] = None  # Default
         
+        # Add state field for implant-related responses
+        if validated.get('type') == 'implant_select' and 'state' not in validated:
+            validated['state'] = 'present'  # Default to present for implant selections
+        
         return validated
 
     def process(self, query: str, conversation_history: List[Dict] = None, session_id: str = None) -> Dict[str, Any]:
         """Process a user query with special handling for implant selection."""
         try:
             query_lower = query.lower()
+            
+            # Check for implant removal requests
+            if any(phrase in query_lower for phrase in ['remove implant', 'delete implant', 'take away implant', 'hide implant', 'no implant']):
+                return {
+                    "type": "implant_select",
+                    "agent": "Control Agent",
+                    "intent": "remove_implant",
+                    "target": "implant_removed",
+                    "value": None,
+                    "message": "Removing current implant from the scene.",
+                    "state": "absent",  # Implant is now absent/removed
+                    "confidence": 0.9,
+                    "context_used": False
+                }
             
             # Check for size rejection or new size request
             if any(phrase in query_lower for phrase in ['i do not want', "don't want", 'not that size', 'different size', 'another size']):
@@ -109,6 +134,7 @@ Respond with a JSON object matching the schema provided."""
                         "target": parsed['target'],
                         "value": parsed['value'],
                         "message": f"Selecting new implant size {parsed['height']}x{parsed['length']} instead.",
+                        "state": "present",  # New implant is now present
                         "confidence": 0.9,
                         "context_used": True
                     }
@@ -134,6 +160,7 @@ Respond with a JSON object matching the schema provided."""
                     "target": parsed['target'],
                     "value": parsed['value'],
                     "message": f"Selecting implant of size {parsed['height']}x{parsed['length']}.",
+                    "state": "present",  # Implant is now present/active
                     "confidence": 0.9,
                     "context_used": False
                 }
@@ -154,6 +181,7 @@ Respond with a JSON object matching the schema provided."""
                         "target": f'implant_{height}x{length}',
                         "value": [height, length],
                         "message": f"Selecting implant of size {height}x{length}.",
+                        "state": "present",  # Implant is now present/active
                         "confidence": 0.9,
                         "context_used": True
                     }

@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from app.agent.base_agent import BaseAgent
 from app.rag.retriever import Retriever
 from app.models import Chunk
-from app.scene.guardrails import guardrails
 
 
 class InfoAgent(BaseAgent):
@@ -16,6 +15,29 @@ class InfoAgent(BaseAgent):
 
     def set_retriever(self, retriever: Retriever) -> None:
         self.retriever = retriever
+
+    def _get_context_from_rag(self, query: str) -> str:
+        """Get context from RAG system using the retriever."""
+        if not self.retriever:
+            return ""
+        
+        try:
+            # Retrieve relevant chunks
+            retrieved = self.retriever.retrieve(query, k=5)
+            if not retrieved:
+                return ""
+            
+            # Build chunk lookup
+            chunk_ids = [item[0] for item in retrieved]
+            chunks = Chunk.query.filter(Chunk.id.in_(chunk_ids)).all()
+            chunk_lookup = {str(chunk.id): chunk.text for chunk in chunks}
+            
+            # Build context
+            context = self.retriever.build_context(query, retrieved, chunk_lookup)
+            return context
+        except Exception as e:
+            print(f"Error retrieving context: {e}")
+            return ""
 
     def _get_system_prompt(self) -> str:
         return """You are an Info Agent for a VR Dental Planning system.
@@ -136,13 +158,7 @@ Respond with a JSON object matching the schema provided."""
                         "sources": []
                     }
             if intent_label == "info_definition":
-                try:
-                    from app.scene.defs import resolve_definition
-                    definition = resolve_definition(text)
-                except Exception:
-                    definition = None
-                if not definition:
-                    definition = data.get("definition")
+                definition = data.get("definition")
                 if definition:
                     return {
                         "type": "answer",

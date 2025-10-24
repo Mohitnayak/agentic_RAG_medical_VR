@@ -7,10 +7,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import faiss  # type: ignore
 import numpy as np
 
-from .vector_store import VectorStore
 
-
-class FAISSVectorStore(VectorStore):
+class FAISSVectorStore:
     def __init__(self, dim: int, storage_dir: str = "storage") -> None:
         self.dim = dim
         self.storage_dir = storage_dir
